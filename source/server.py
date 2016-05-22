@@ -6,15 +6,16 @@ ClientData=namedtuple('ClientData','name IP port')
 
 class Server(DirectObject):
     def __init__(self):
-        log.debug("Starting Server") 
+        log.debug('Starting Server')
         self.clients={}
-        
+
         # Task
-        taskMgr.add(self.update, 'server_update') 
-        
-        log.debug("Server started")
-        
+        taskMgr.add(self.update, 'server_update')
+
+        log.debug('Server started')
+
     #tasks
     def update(self, task):
-        dt = globalClock.getDt()        
-        return task.cont    
+        dt = globalClock.getDt()
+        return task.cont
+

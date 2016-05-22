@@ -7,17 +7,16 @@ from network import Network
 from masterserver import Masterserver
 from world import World
 
-
 import traceback
 
 class Game(DirectObject):
-    def __init__(self): 
-        
+    def __init__(self):
+
         #in all game modes a world, a network and a server is needed
         self.world=World()
         self.net=Network()
-        self.server=Server()    
-            
+        self.server=Server()
+
         if cfg['game-mode']=='normal':
             self.client=Client()
-            
+
