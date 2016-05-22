@@ -8,6 +8,8 @@ EXPLICIT = 0
 RADIATE = 1
 CUSTOM = 2
 
+
+#quick and dirty way to make a particle effect
 def Vfx(preset_name, **kwargs):
     if preset_name == 'menu_ring':
         p=ParticleVfx('menu_ring')
@@ -43,6 +45,9 @@ def Vfx(preset_name, **kwargs):
         return p
 
 class ParticleVfx():
+    """
+    Wrapper class for ParticleEffect
+    """
     def __init__(self, name='particles-1'):
         self.node = ParticleEffect()
         self.p0 = Particles.Particles(name)

@@ -18,6 +18,9 @@ def _resetPivot(frame):
     frame.flattenLight()
 
 class MainMenu(DirectObject):
+    """
+    Main Menu, the menu shown befor starting a match or between them
+    """
     def __init__(self, ui):
         self.ui=ui
         #3D-ish background for the main menu
@@ -50,38 +53,38 @@ class MainMenu(DirectObject):
 
         #link-bar
         self.elements['link_bar_1']=self._makeFrame(path+'gui/bar2.png', ui.top_left, (128,108), (128, 32))
-        self.elements['link_bar_1'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['link_bar_1'].setColor(cfg['ui_color3'])
         self.elements['link_bar_1'].hide()
         self.elements['link_line_1']=self._makeFrame(path+'gui/line1.png', ui.top_left, (128+128,108), (1, 32))
-        self.elements['link_line_1'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['link_line_1'].setColor(cfg['ui_color3'])
         self.elements['link_line_1'].hide()
 
         self.elements['link_bar_2']=self._makeFrame(path+'gui/bar2.png', ui.top, (0,108), (128, 32))
         self.elements['link_bar_2'].hide()
-        self.elements['link_bar_2'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['link_bar_2'].setColor(cfg['ui_color3'])
         self.elements['link_line_2']=self._makeFrame(path+'gui/line1.png', ui.top, (128,108), (1, 32))
         self.elements['link_line_2'].hide()
-        self.elements['link_line_2'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['link_line_2'].setColor(cfg['ui_color3'])
 
         #top of the content frame
         self.elements['content_frame_1']=self._makeFrame(path+'gui/frame5.png', ui.top_right, (-256,62), (256, 256))
         self.elements['content_frame_1'].hide()
-        self.elements['content_frame_1'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['content_frame_1'].setColor(cfg['ui_color3'])
         #center of the content frame
         self.elements['content_frame_2']=self._makeFrame(path+'gui/frame7.png', ui.top_right, (-256,62+256), (256, 1))
         self.elements['content_frame_2'].hide()
-        self.elements['content_frame_2'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['content_frame_2'].setColor(cfg['ui_color3'])
         #bottom of the content frame
         self.elements['content_frame_3']=self._makeFrame(path+'gui/frame6.png', ui.bottom_right, (-256,-64-8), (256, 64))
         self.elements['content_frame_3'].hide()
-        self.elements['content_frame_3'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['content_frame_3'].setColor(cfg['ui_color3'])
         #tooltip frame
         self.elements['tooltip_frame']=self._makeFrame(path+'gui/frame8.png', ui.top_right, (-256-234,-64-8+256+40), (256, 256))
         self.elements['tooltip_frame'].hide()
-        self.elements['tooltip_frame'].setColor(0.33, 0.56, 1.0, 1.0)
+        self.elements['tooltip_frame'].setColor(cfg['ui_color3'])
 
         self.ingore_hover=[]
-
+        self.last_element_list=[]
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
     def setShader(self, v_shader, f_shader):
@@ -93,107 +96,60 @@ class MainMenu(DirectObject):
         """A function for doing some random testing stuff, do not use """
         messenger.send('audio-sfx',['large-explosion', (0, 0, 0)])
 
-    def fadeIn(self, frame, from_color, to_color):
+    def fadeIn(self, frame, to_color, from_color=(1, 1, 1, 0)):
+        frame.show()
         frame.setColor(from_color)
         LerpColorInterval(frame, 0.3, to_color, blendType='easeInOut').start()
 
+    def showContentFrame(self,line='link_line_1', bar='link_bar_1', tex='gui/bar1.png'):
+        self.elements['link_line_1'].hide()
+        self.elements['link_line_2'].hide()
+        self.elements['link_bar_1'].hide()
+        self.elements['link_bar_2'].hide()
+        self.elements[bar]['frameTexture']=loader.loadTexture(path+tex)
+        self.fadeIn(self.elements[line],cfg['ui_color3'])
+        self.fadeIn(self.elements[bar],cfg['ui_color3'])
+        self.fadeIn(self.elements['content_frame_1'],cfg['ui_color3'])
+        self.fadeIn(self.elements['content_frame_2'],cfg['ui_color3'])
+        self.fadeIn(self.elements['content_frame_3'],cfg['ui_color3'])
+
+    def showMenu(self, main_button, ring_id, element_list):
+        self.ingore_hover=[]
+        self.hoverAllOut()
+        self.fadeIn(self.elements[main_button], cfg['ui_color3'])
+        if ring_id is not None:
+            self.rings[ring_id][0].setColor(cfg['ui_color3'])
+            self.rings[ring_id][2].setColor(cfg['ui_color3'])
+            self.rings[ring_id][2].setForce('up', 1)
+            self.rings[ring_id][2].setForce('down', 0)
+        if main_button=='tutorial_button':
+            self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar1.png')
+        if main_button=='host_button':
+            self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar1.png')
+        if main_button=='join_button':
+            self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar2.png')
+        if main_button=='options_button':
+            self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+
+        for element in self.last_element_list:
+            self.elements[element].hide()
+        for element in element_list:
+            self.fadeIn(self.elements[element],cfg['ui_color3'])
+
+        self.ingore_hover.append(self.elements[main_button])
+        self.last_element_list=element_list
 
     def showTutorialMenu(self):
-        self.ingore_hover=[]
-        self.hoverAllOut()
-        self.onHoverIn(self.elements['tutorial_button'],ring_id= 2)
-        self.fadeIn(self.elements['tutorial_button'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['tutorial_button']['text_fg']=(0.33, 0.56, 1.0, 1.0)
-        #self.elements['tutorial_button'].setColor(0.33, 0.56, 1.0, 1.0)
-        self.elements['link_bar_1'].show()
-        self.elements['link_bar_1']['frameTexture']=loader.loadTexture(path+'gui/bar1.png')
-        self.elements['link_line_1'].show()
-        self.fadeIn(self.elements['content_frame_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_3'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['tooltip_frame'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_line_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_bar_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['content_frame_1'].show()
-        self.elements['content_frame_2'].show()
-        self.elements['content_frame_3'].show()
-        self.elements['link_line_2'].hide()
-        self.elements['link_bar_2'].hide()
-        self.elements['tooltip_frame'].show()
-        if not self.elements['tutorial_button'] in self.ingore_hover:
-            self.ingore_hover.append(self.elements['tutorial_button'])
+        self.showMenu('tutorial_button', 2, ['tooltip_frame'])
 
     def showOptionMenu(self):
-        self.ingore_hover=[]
-        self.hoverAllOut()
-        self.onHoverIn(self.elements['options_button'], ring_id= 3)
-        self.fadeIn(self.elements['options_button'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['options_button']['text_fg']=(0.33, 0.56, 1.0, 1.0)
-        #self.elements['options_button'].setColor(0.33, 0.56, 1.0, 1.0)
-        self.elements['link_bar_1'].show()
-        self.elements['link_bar_1']['frameTexture']=loader.loadTexture(path+'gui/bar2.png')
-        self.elements['link_line_1'].show()
-        self.fadeIn(self.elements['content_frame_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_3'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_line_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_bar_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['content_frame_1'].show()
-        self.elements['content_frame_2'].show()
-        self.elements['content_frame_3'].show()
-        self.elements['link_line_2'].hide()
-        self.elements['link_bar_2'].hide()
-        self.elements['tooltip_frame'].hide()
-        if not self.elements['options_button'] in self.ingore_hover:
-            self.ingore_hover.append(self.elements['options_button'])
+        self.showMenu('options_button', 3, [])
 
     def showHostMenu(self):
-        self.ingore_hover=[]
-        self.hoverAllOut()
-        self.onHoverIn(self.elements['host_button'], ring_id= 0)
-        self.fadeIn(self.elements['host_button'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['host_button']['text_fg']=(0.33, 0.56, 1.0, 1.0)
-        #self.elements['host_button'].setColor(0.33, 0.56, 1.0, 1.0)
-        self.elements['link_bar_2'].show()
-        self.elements['link_bar_2']['frameTexture']=loader.loadTexture(path+'gui/bar1.png')
-        self.elements['link_line_2'].show()
-        self.fadeIn(self.elements['content_frame_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_3'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_line_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_bar_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['content_frame_1'].show()
-        self.elements['content_frame_2'].show()
-        self.elements['content_frame_3'].show()
-        self.elements['link_line_1'].hide()
-        self.elements['link_bar_1'].hide()
-        self.elements['tooltip_frame'].hide()
-        if not self.elements['host_button'] in self.ingore_hover:
-            self.ingore_hover.append(self.elements['host_button'])
+        self.showMenu('host_button', 0, [])
 
     def showJoinMenu(self):
-        self.ingore_hover=[]
-        self.hoverAllOut()
-        self.onHoverIn(self.elements['join_button'], ring_id=1)
-        self.fadeIn(self.elements['join_button'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['join_button']['text_fg']=(0.33, 0.56, 1.0, 1.0)
-        #self.elements['join_button'].setColor(0.33, 0.56, 1.0, 1.0)
-        self.elements['link_bar_2'].show()
-        self.elements['link_bar_2']['frameTexture']=loader.loadTexture(path+'gui/bar2.png')
-        self.elements['link_line_2'].show()
-        self.fadeIn(self.elements['content_frame_1'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['content_frame_3'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_line_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.fadeIn(self.elements['link_bar_2'], (1, 1, 1, 0),(0.33, 0.56, 1.0, 1.0))
-        self.elements['content_frame_1'].show()
-        self.elements['content_frame_2'].show()
-        self.elements['content_frame_3'].show()
-        self.elements['link_line_1'].hide()
-        self.elements['link_bar_1'].hide()
-        self.elements['tooltip_frame'].hide()
-        if not self.elements['join_button'] in self.ingore_hover:
-            self.ingore_hover.append(self.elements['join_button'])
+        self.showMenu('join_button', 1, [])
 
     def resize(self, window_x, window_y):
         #link_line_1 starts at x=256 and ends at window_x-256
@@ -212,8 +168,15 @@ class MainMenu(DirectObject):
             ring[2].hide()
 
     def show(self):
-        for element in self.elements.itervalues():
-            element.show()
+        self.elements['close_button'].show()
+        self.elements['tutorial_button'].show()
+        self.elements['host_button'].show()
+        self.elements['join_button'].show()
+        self.elements['options_button'].show()
+        self.elements['frame_top_left'].show()
+        self.elements['frame_top_right'].show()
+        self.elements['frame_bottom_left'].show()
+        self.elements['frame_bottom_right'].show()
         for ring in self.rings:
             ring[0].show()
             ring[1].loop()
@@ -238,9 +201,9 @@ class MainMenu(DirectObject):
             return
         if tex:
             frame['frameTexture']=loader.loadTexture(tex)
-        frame['text_fg']=(0.94, 0.0, 0.1, 1.0)
-        frame.setColor(0.94, 0.0, 0.1, 1.0)
-        self.rings[ring_id][0].setColor(0.94, 0.0, 0.1, 1.0)
+        frame['text_fg']=cfg['ui_color2']
+        frame.setColor(cfg['ui_color2'])
+        self.rings[ring_id][0].setColor(cfg['ui_color2'])
         LerpPosInterval(self.rings[ring_id][0], 0.2, (0,0, 5.0)).start()
         if self.rings[ring_id][2]:
             self.rings[ring_id][2].setColor((1.0, 0.0, 0.0, 1.0))
@@ -252,13 +215,13 @@ class MainMenu(DirectObject):
             return
         if tex:
             frame['frameTexture']=loader.loadTexture(tex)
-        frame['text_fg']=(0.33, 0.894, 1.0, 1.0)
-        frame.setColor(0.33, 0.894, 1.0, 1.0)
-        self.rings[ring_id][0].setColor(0.33, 0.894, 1.0, 1.0)
+        frame['text_fg']=cfg['ui_color1']
+        frame.setColor(cfg['ui_color1'])
+        self.rings[ring_id][0].setColor(cfg['ui_color1'])
         LerpPosInterval(self.rings[ring_id][0], 0.2, (0,0, 0.0)).start()
         if self.rings[ring_id][2]:
-            #self.rings[ring_id][2].getParticlesList()[0].renderer.setColor((0.33, 0.894, 1.0, 1.0))
-            self.rings[ring_id][2].setColor((0.33, 0.894, 1.0, 1.0))
+            #self.rings[ring_id][2].getParticlesList()[0].renderer.setColor(cfg['ui_color1'])
+            self.rings[ring_id][2].setColor(cfg['ui_color1'])
             self.rings[ring_id][2].setForce('up', 0)
             self.rings[ring_id][2].setForce('down', 1)
 
@@ -273,12 +236,12 @@ class MainMenu(DirectObject):
                                 text_font=font,
                                 text_align=TextNode.ACenter,
                                 text_pos=(-size[0]/2,size[1]/2-4),
-                                text_fg=(0.33, 0.894, 1.0, 1.0),
+                                text_fg=cfg['ui_color1'],
                                 state=DGG.NORMAL,
                                 parent=parent)
         _resetPivot(frame)
         frame.setPos(_pos2d(offset[0],offset[1]))
-        frame.setColor(0.33, 0.894, 1.0, 1.0)
+        frame.setColor(cfg['ui_color1'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
         frame.bind(DGG.WITHOUT, self.onHoverOut,[frame, tex, ring_id])
         frame.bind(DGG.WITHIN, self.onHoverIn, [frame, hover_tex, ring_id])
@@ -292,7 +255,7 @@ class MainMenu(DirectObject):
                                 parent=parent)
         _resetPivot(frame)
         frame.setPos(_pos2d(offset[0],offset[1]))
-        frame.setColor(0.33, 0.894, 1.0, 1.0)
+        frame.setColor(cfg['ui_color1'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
         return frame
 
@@ -311,8 +274,8 @@ class MainMenu(DirectObject):
         ring_plane.setDepthWrite(False)
         ring_plane.setPos(0,0,0)
         ring_plane.setHpr(0, -90, 0)
-        ring_plane.setColor(0.33, 0.894, 1.0, 1.0)
-        particle=Vfx('menu_ring', radius=12+z+(z*3), parent=ring_plane, color=(0.33, 0.894, 1.0, 1.0) )
+        ring_plane.setColor(cfg['ui_color1'])
+        particle=Vfx('menu_ring', radius=12+z+(z*3), parent=ring_plane, color=cfg['ui_color1'] )
         interval=LerpHprInterval(ring_plane, time,(0, -90, 360))
         interval.loop()
         return (ring_plane, interval, particle)

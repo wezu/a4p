@@ -19,6 +19,9 @@ def _resetPivot(frame):
     frame.flattenLight()
 
 class UserInterface(DirectObject):
+    """
+    Handels player input, be it via a gui, keys or mouse movment
+    """
     def __init__(self):
         log.debug('Starting UserInterface')
 

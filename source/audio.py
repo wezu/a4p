@@ -6,9 +6,16 @@ from collections import deque
 import random
 
 class Audio(DirectObject):
+    """
+    Plays sounds and music.
+    """
     def __init__(self, distance_factor=10.0, doppler_factor=1.0):
         #load all known music files
         log.debug('Audio: loading music')
+
+        self.music_manager=base.musicManager
+        self.sfx_manager=base.sfxManagerList[0]
+
         self.music={}
         music_dir=listdir(path+'music')
         for music_file in music_dir:
@@ -22,7 +29,7 @@ class Audio(DirectObject):
         for sfx_file in sfx_dir:
             name=Filename(sfx_file)
             if  name.getExtension() in ('wav', 'mp3', 'ogg'):
-                self.sfx[name.getBasenameWoExtension()]=loader.loadSound(base.sfxManagerList[0], path+'sounds/'+sfx_file, True)
+                self.sfx[name.getBasenameWoExtension()]=loader.loadSound(self.sfx_manager, path+'sounds/'+sfx_file, True)
         #list of music files to be played
         self.playlist=None
         self.current_track=None
@@ -32,8 +39,8 @@ class Audio(DirectObject):
         self.seq=None
         self.pause_time=0.0
 
-        base.sfxManagerList[0].audio3dSetDistanceFactor(distance_factor)
-        base.sfxManagerList[0].audio3dSetDopplerFactor(doppler_factor)
+        self.sfx_manager.audio3dSetDistanceFactor(distance_factor)
+        self.sfx_manager.audio3dSetDopplerFactor(doppler_factor)
 
         log.debug('Audio started')
 
@@ -41,17 +48,17 @@ class Audio(DirectObject):
         self.accept('audio-sfx',self.playSound)
 
         #task
-        taskMgr.add(self.update, 'ui_update')
+        taskMgr.add(self.update, 'audio_update')
 
 
     def update(self, task):
-        if base.sfxManagerList[0].getActive():
+        if self.sfx_manager.getActive():
             dt=globalClock.getDt()
             pos = base.camera.getPos(render)
             forward = render.getRelativeVector(base.camera, Vec3.forward())
             up = render.getRelativeVector(base.camera, Vec3.up())
             vel = base.camera.getPosDelta(render)/dt
-            base.sfxManagerList[0].audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
+            self.sfx_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
         return task.cont
 
     def playSound(self, sound, pos=(0,0,0), vel=(0,0,0)):
@@ -91,11 +98,11 @@ class Audio(DirectObject):
                 self.playlist=deque(shuffle_list)
 
             #we fade the music in, and then fade it out again
-            base.musicManager.setVolume(0.0)
+            self.music_manager.setVolume(0.0)
             self.current_track.play()
-            self.seq=Sequence(LerpFunc(base.musicManager.setVolume,fromData=0.0,toData=self.music_volume,duration=5.0),
+            self.seq=Sequence(LerpFunc(self.music_manager.setVolume,fromData=0.0,toData=self.music_volume,duration=5.0),
                         Wait(time-10.0),
-                        LerpFunc(base.musicManager.setVolume,fromData=self.music_volume,toData=0.0,duration=5.0),
+                        LerpFunc(self.music_manager.setVolume,fromData=self.music_volume,toData=0.0,duration=5.0),
                         Func(self.current_track.stop),
                         Func(self.playMusic))
             self.seq.start()
@@ -115,10 +122,11 @@ class Audio(DirectObject):
             self.seq.pause()
 
     def setMusicVolume(self, volume):
-        pass
+        self.music_manager.setVolume(volume)
+        self.music_volume=volume
 
     def setSoundVolume(self, volume):
-        pass
+        self.sfx_manager.setVolume(volume)
 
 
 

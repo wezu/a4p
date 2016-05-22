@@ -16,6 +16,9 @@ loadPrcFileData('', 'font-default font/DejaVuSans.ttf')
 loadPrcFileData('', 'font-special font/visitor2.ttf')
 loadPrcFileData('', 'textures-power-2 None')
 loadPrcFileData('', 'pause-on-focus-fost True')
+loadPrcFileData('', 'ui_color1 0.33 0.894 1.0 1.0')
+loadPrcFileData('', 'ui_color2 0.94 0.0 0.1 1.0')
+loadPrcFileData('', 'ui_color3 0.33 0.56 1.0 1.0')
 from panda3d.core import loadPrcFile
 loadPrcFile('base_config.prc')
 #Whatever the prc file says - we don't want any window yet!
@@ -47,7 +50,9 @@ class Configer (object):
         if key in self.cfg:
             return self.cfg[key]
         else:
-            return self.getValueFromConfigVariable(key)
+            v=self.getValueFromConfigVariable(key)
+            self.cfg[key]=v
+            return v
         return None
 
     def __setitem__(self, key, value):
@@ -65,8 +70,8 @@ class Configer (object):
             return var.getValue()
         r=[]
         for i in range(world_count):
-            r.append(var.getWord(i))
-        return r
+            r.append(ast.literal_eval(str(var.getWord(i))))
+        return tuple(r)
 
     def getValueFromConfigVariable(self, var_name):
         """Returns the config variable value or values no matter what the
@@ -119,7 +124,7 @@ class Configer (object):
             r=[]
             for var in variables:
                 try:
-                   r.append(ast.literal_eval(var))
+                    r.append(ast.literal_eval(var))
                 except:
                     #some special strings should be converted to bool
                     if variables in ('false', '#f'):
@@ -128,7 +133,7 @@ class Configer (object):
                         r.append(True)
                     else:
                         r.append(var)
-            return r
+            return tuple(r)
         return None
 
     def loadConfig(self, config_file_name, load_all=False):
@@ -140,10 +145,11 @@ class Configer (object):
                 for row in f:
                     if not row.startswith('#'):
                         loadPrcFileData('',row)
-                        var_name=row.split()[0]
-                        var_value=self.getValueFromConfigVariable(var_name)
-                        config_dict[var_name]=var_value
-                        log.debug(var_name+' set to '+str(var_value))
+                        if row.split():
+                            var_name=row.split()[0]
+                            var_value=self.getValueFromConfigVariable(var_name)
+                            config_dict[var_name]=var_value
+                            log.debug(var_name+' set to '+str(var_value))
         except IOError:
             log.warning('Could not load config file: '+config_file_name)
 
@@ -212,6 +218,9 @@ class Configer (object):
             return str(v)
 
 class Logger:
+    """
+    Prints messages to the consol and/or file and or gui element
+    """
     def __init__(self, gui=None, out_file=None):
         self.notify = DirectNotify().newCategory('a4p')
         self.gui=gui
@@ -299,6 +308,7 @@ class App():
 
         if cfg['want-pstats']:
             PStatClient.connect()
+
 
         #config vars can also be passed as command line arguments
         if len(sys.argv)>1:

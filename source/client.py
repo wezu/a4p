@@ -6,6 +6,9 @@ from ui import UserInterface
 from audio import Audio
 
 class Client(DirectObject):
+    """
+    Client class handels gui/input audio and rendering
+    """
     def __init__(self):
         log.debug('Starting Client')
         #open a window... but first set all the needed props
