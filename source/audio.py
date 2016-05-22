@@ -26,7 +26,7 @@ class Audio(DirectObject):
         #list of music files to be played
         self.playlist=None
         self.current_track=None
-        self.music_volume=0.1
+        self.music_volume=1.0
         self.sfx_volume=1.0
         self.shufle=False
         self.seq=None
@@ -38,8 +38,7 @@ class Audio(DirectObject):
         log.debug('Audio started')
 
         #event handling
-        self.accept('audio-sfx-2d',self.playSound2D)
-        self.accept('audio-sfx-3d',self.playSound3D)
+        self.accept('audio-sfx',self.playSound)
 
         #task
         taskMgr.add(self.update, 'ui_update')
@@ -55,14 +54,7 @@ class Audio(DirectObject):
             base.sfxManagerList[0].audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
         return task.cont
 
-    def playSound2D(self, sound):
-        if sound in self.sfx:
-            self.sfx[sound].set3dAttributes(0,0,0, 0,0,0)
-            self.sfx[sound].play()
-        else:
-            log.warning('Audio: unknown sfx: '+sound)
-
-    def playSound3D(self, sound, pos, vel=(0,0,0)):
+    def playSound(self, sound, pos=(0,0,0), vel=(0,0,0)):
         if sound in self.sfx:
             self.sfx[sound].set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
             self.sfx[sound].play()

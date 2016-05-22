@@ -91,7 +91,7 @@ class MainMenu(DirectObject):
 
     def _doDebugThing(self):
         """A function for doing some random testing stuff, do not use """
-        messenger.send('audio-sfx-3d',['large-explosion', (0, 0, 0)])
+        messenger.send('audio-sfx',['large-explosion', (0, 0, 0)])
 
     def fadeIn(self, frame, from_color, to_color):
         frame.setColor(from_color)
@@ -223,7 +223,7 @@ class MainMenu(DirectObject):
         messenger.send('exit-event')
 
     def onCmd(self, frame, cmd, event=None):
-        messenger.send('audio-sfx-2d',['click'])
+        messenger.send('audio-sfx',['click'])
         cmd()
 
     def hoverAllOut(self):
