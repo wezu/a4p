@@ -21,7 +21,6 @@ class MainMenu(DirectObject):
     def __init__(self, ui):
         self.ui=ui
         #3D-ish background for the main menu
-        #base.cam.setZ(8)
         base.cam.setPos(173.453, 8.02785, 143.622)
         base.cam.setHpr(92.2724, -28.5096, -58.8269)
 
@@ -89,6 +88,10 @@ class MainMenu(DirectObject):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
         for element in self.elements.itervalues():
             element.setAttrib(shader_attrib)
+
+    def _doDebugThing(self):
+        """A function for doing some random testing stuff, do not use """
+        messenger.send('audio-sfx-3d',['large-explosion', (0, 0, 0)])
 
     def fadeIn(self, frame, from_color, to_color):
         frame.setColor(from_color)
