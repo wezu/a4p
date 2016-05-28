@@ -114,15 +114,14 @@ class MainMenu(DirectObject):
                                                             verticalScroll_thumb_relief=DGG.FLAT,
                                                             verticalScroll_thumb_frameSize=_rec2d(16,64),
                                                             verticalScroll_thumb_frameColor=cfg['ui_color1'],
-                                                            verticalScroll_thumb_frameTexture=path+'gui/thumb.png',
-                                                            #scrollBarWidth=16,
-                                                            verticalScroll_incButton_frameColor=(1,0,0,0.0),
-                                                            verticalScroll_decButton_frameColor=(1,0,0,0.0),
+                                                            verticalScroll_thumb_frameTexture=path+'gui/thumb.png'
                                                             )
         _resetPivot(self.elements['scrolled_frame'])
         self.elements['scrolled_frame'].setPos(_pos2d(0,-48))
         self.elements['scrolled_frame'].setTransparency(TransparencyAttrib.MAlpha)
         self.elements['scrolled_frame'].hide()
+        self.elements['scrolled_frame'].verticalScroll.incButton.hide()
+        self.elements['scrolled_frame'].verticalScroll.decButton.hide()
         self.elements['scroll_canvas']=self.elements['scrolled_frame'].getCanvas()
         #all the options buttons
         self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showOptionMenu, 'scroll_canvas')
