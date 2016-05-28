@@ -23,7 +23,7 @@ class Audio(DirectObject):
             if  name.getExtension() in ('wav', 'mp3', 'ogg'):
                 self.music[name.getBasenameWoExtension()]=loader.loadMusic(path+'music/'+music_file)
         #load all known sfx files
-        log.debug('Audio: loading music')
+        log.debug('Audio: loading sounds')
         self.sfx={}
         sfx_dir=listdir(path+'sounds')
         for sfx_file in sfx_dir:
@@ -33,11 +33,18 @@ class Audio(DirectObject):
         #list of music files to be played
         self.playlist=None
         self.current_track=None
-        self.music_volume=1.0
-        self.sfx_volume=1.0
+        #set volume
+        self.music_volume=cfg['music-volume']
+        self.music_manager.setVolume(self.music_volume)
+        self.sfx_volume=cfg['sound-volume']
+        self.sfx_manager.setVolume(self.sfx_volume)
+        #shufle
         self.shufle=False
+        #some other stuff...
         self.seq=None
         self.pause_time=0.0
+        #list of sounds attached to objects
+        self.attached_sounds=[]
 
         self.sfx_manager.audio3dSetDistanceFactor(distance_factor)
         self.sfx_manager.audio3dSetDopplerFactor(doppler_factor)
@@ -59,10 +66,23 @@ class Audio(DirectObject):
             up = render.getRelativeVector(base.camera, Vec3.up())
             vel = base.camera.getPosDelta(render)/dt
             self.sfx_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
+
+            #a copy is needed to remove items from the list we are iterating
+            for sound_and_node in self.attached_sounds[:]:
+                if sound_and_node[0].status() == sound_and_node[0].PLAYING:
+                    pos=sound_and_node[1].getPos(render)
+                    vel = sound_and_node[1].getPosDelta(render)/dt
+                    sound_and_node[0].set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
+                else:
+                    self.attached_sounds.remove(sound_and_node)
+
         return task.cont
 
     def playSound(self, sound, pos=(0,0,0), vel=(0,0,0)):
         if sound in self.sfx:
+            if type(pos).__name__ == 'NodePath':
+                self.attached_sounds.append((self.sfx[sound], pos))
+                pos=pos.getPos(render)
             self.sfx[sound].set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
             self.sfx[sound].play()
         else:

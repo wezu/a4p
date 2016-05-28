@@ -27,13 +27,13 @@ class UserInterface(DirectObject):
 
         #load fonts
         self.font = loader.loadFont(path+cfg['font-default'])
-        self.font.setPixelsPerUnit(32)
+        self.font.setPixelsPerUnit(18)
         self.font.setMinfilter(Texture.FTNearest )
         self.font.setMagfilter(Texture.FTNearest )
 
         self.font_special = loader.loadFont(path+cfg['font-special'])
-        self.font_special.setPixelsPerUnit(32)
-        self.font_special.set_outline((1, 1, 1, 0.5), 4, 0.6)
+        self.font_special.setPixelsPerUnit(48)
+        self.font_special.set_outline((1, 1, 1, 0.5),3, 0.6)
         self.font_special.setMinfilter(Texture.FTNearest )
         self.font_special.setMagfilter(Texture.FTNearest )
 
@@ -59,10 +59,11 @@ class UserInterface(DirectObject):
             self.fps_node.setPos(-128, 0, 0)
 
         #mouse cursor
-        self.cursor=self.main_menu._makeFrame(path+'gui/pointer1.png', pixel2d, (0,0), (32, 32))
+        self.cursor=self.main_menu.makeFrame(path+'gui/pointer1.png', pixel2d, (0,0), (32, 32))
 
         #place the nodes at the right places
         self.updateGuiNodes()
+
 
         # Task
         taskMgr.add(self.update, 'ui_update')
@@ -79,8 +80,10 @@ class UserInterface(DirectObject):
         return task.cont
 
     def onWindowMouseOut(self):
-        self.main_menu.hoverAllOut()
-        self.cursor.hide()
+        if not self.cursor.isHidden():
+            self.main_menu.hoverAllOut()
+            self.cursor.hide()
+
 
     def updateGuiNodes(self):
         winX = base.win.getXSize()

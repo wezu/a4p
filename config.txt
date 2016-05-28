@@ -1,6 +1,8 @@
 win-size 800 600
 use-fxaa True
-show-frame-rate-meter  0
+show-frame-rate-meter  1
 sync-video 0
 want-pstats 0
-
+sound-volume 0.5
+music-volume 0.1
+mouse-scroll-speed 0.05

@@ -40,7 +40,7 @@ class Client(DirectObject):
         #open the window
         base.openMainWindow(props = wp)
         base.setBackgroundColor(0.06, 0.1, 0.12, 1)
-        #base.disableMouse()
+        base.disableMouse()
         base.enableParticles()
 
         #needed to determine what window event fired
