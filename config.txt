@@ -1,8 +1,34 @@
-win-size 800 600
-use-fxaa True
-show-frame-rate-meter  1
-sync-video 0
-want-pstats 0
-sound-volume 0.5
-music-volume 0.1
+#A4P config file, edit at your own risk
+font-default font/DejaVuSans.ttf
+font-special font/control-freak.ttf
+fullscreen False
+game-mode normal
+key-back s
+key-fire mouse1
+key-forward w
+key-left a
+key-menu escape
+key-orders q
+key-right d
+key-sprint lshift
+key-zoom mouse3
+log-file None
 mouse-scroll-speed 0.05
+music-volume 0.1
+notify-level-a4p debug
+pause-on-focus-lost False
+show-frame-rate-meter 1
+sound-volume 0.5
+source-dir source
+srgb False
+sync-video False
+textures-power-2 None
+ui_color1 0.33 0.894 1.0 1.0
+ui_color2 0.94 0.0 0.1 1.0
+ui_color3 0.33 0.56 1.0 1.0
+undecorated False
+use-filters None
+use-fxaa True
+want-pstats False
+win-fixed-size False
+win-size 800 600

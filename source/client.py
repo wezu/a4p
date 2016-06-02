@@ -85,12 +85,13 @@ class Client(DirectObject):
     def onWindowFocus(self):
         self.window_focused=base.win.getProperties().getForeground()
         log.debug('window-event: Focus set to '+str(self.window_focused))
-        if not self.window_focused:
-            self.audio.pauseMusic()
-            base.win.setActive(False)
-        else:
-            self.audio.resumeMusic()
-            base.win.setActive(True)
+        if cfg['pause-on-focus-lost']:
+            if not self.window_focused:
+                self.audio.pauseMusic()
+                base.win.setActive(False)
+            else:
+                self.audio.resumeMusic()
+                base.win.setActive(True)
 
     def onWindowResize(self):
         self.window_x=base.win.getXSize()

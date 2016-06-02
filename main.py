@@ -19,10 +19,11 @@ loadPrcFileData('', 'pause-on-focus-fost True')
 loadPrcFileData('', 'ui_color1 0.33 0.894 1.0 1.0')
 loadPrcFileData('', 'ui_color2 0.94 0.0 0.1 1.0')
 loadPrcFileData('', 'ui_color3 0.33 0.56 1.0 1.0')
-from panda3d.core import loadPrcFile
-loadPrcFile('base_config.prc')
-#Whatever the prc file says - we don't want any window yet!
 loadPrcFileData('', 'window-type none')
+#meh, just use one config file - config.txt loaded a bit later
+#if the file is lost we still have the basic valuese hardcoded here
+#from panda3d.core import loadPrcFile
+#loadPrcFile('base_config.prc')
 #import the rest
 from panda3d.core import *
 from direct.showbase import ShowBase
@@ -37,6 +38,12 @@ class Configer (object):
     The class will load a config file, it also has a dict-like interface
     """
     def __init__(self, config_file):
+        #a temp log is needed, we can't use the 'global' log,
+        #we first need to know where/what to log
+        #and that info is in the config file we are about to load
+        #solution - we store the msg and prit them later when the log system is up
+        self.warning=[]
+        self.debug=[]
         self.loadConfig(config_file)
 
     def getItem(self, key):
@@ -139,7 +146,7 @@ class Configer (object):
     def loadConfig(self, config_file_name, load_all=False):
         self.cfg={}
         config_dict={}
-        log.debug('Loading config from: '+config_file_name)
+        self.debug.append('Loading config from: '+config_file_name)
         try:
             with open(config_file_name,'r') as f:
                 for row in f:
@@ -149,12 +156,12 @@ class Configer (object):
                             var_name=row.split()[0]
                             var_value=self.getValueFromConfigVariable(var_name)
                             config_dict[var_name]=var_value
-                            log.debug(var_name+' set to '+str(var_value))
+                            self.debug.append(var_name+' set to '+str(var_value))
         except IOError:
-            log.warning('Could not load config file: '+config_file_name)
+            self.warning.append('Could not load config file: '+config_file_name)
 
         if load_all:
-            log.warning('Reading all known config variables!')
+            self.warning.append('Reading all known config variables!')
             for i in range(ConfigVariableManager.getGlobalPtr().getNumVariables()):
                 var_name=ConfigVariableManager.getGlobalPtr().getVariableName(i)
                 var_value=self.getValueFromConfigVariable(var_name)
@@ -165,7 +172,7 @@ class Configer (object):
         log.debug('Saving config file to: '+config_file)
         try:
             with open(config_file, 'w') as out_file:
-                out_file.write('#auto generated config file\n')
+                out_file.write('#A4P config file, edit at your own risk\n')
                 for key in sorted(self.cfg):
                     out_file.write(key+' '+self.getCfgValueAsString(key)+'\n')
         except IOError:
@@ -293,18 +300,21 @@ class App():
 
         #base.disableMouse()
 
+        #load all the config vars
+        builtins.cfg=Configer(path+'config.txt')
+
         #log/print all messages
-        log_file=ConfigVariableString('log-file', '').getValue()
-        if log_file in (0, None, 'None', False, '#f', '0', 'False', 'false', ''):
-            log_file=None
-        builtins.log=Logger(out_file=log_file)
+        builtins.log=Logger(out_file=cfg['log-file'])
+
+        #print the msg (as needed from the configer
+        for msg in cfg.debug:
+            log.debug(msg)
+        for msg in cfg.warning:
+            log.warning(msg)
 
         #make the path a builtin
         builtins.path=path
         log.debug('Curent working directory is: '+path)
-
-        #load all the config vars
-        builtins.cfg=Configer(path+'config.txt')
 
         if cfg['want-pstats']:
             PStatClient.connect()

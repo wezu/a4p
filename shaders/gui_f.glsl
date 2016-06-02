@@ -12,8 +12,8 @@ out vec4 final_color;
 
 void main()
     {
-    vec4 tex=texture(p3d_Texture0, uv);
     vec4 strip_tex=texture(strip, vec2(v_pos.r*4.0, v_pos.g*0.4+osg_FrameTime*0.3));
-    final_color=vec4(v_color.rgb+strip_tex.rgb, tex.a+strip_tex.r*tex.a);
-    //final_color=vec4(v_pos.rg, 0.0, 1.0);
+    vec2 moved_uv=uv+strip_tex.r*0.02;
+    vec4 tex=texture(p3d_Texture0, moved_uv);
+    final_color=vec4(v_color.rgb+strip_tex.rgb, tex.a);
     }
