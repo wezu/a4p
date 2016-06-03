@@ -3,6 +3,9 @@ from direct.showbase.DirectObject import DirectObject
 from direct.gui.DirectGui import *
 from direct.interval.IntervalGlobal import *
 from direct.stdpy.file import listdir
+import ast
+import string
+import re
 
 from vfx import Vfx
 
@@ -37,6 +40,7 @@ def loadTex(texturePath, wrap=SamplerState.WM_mirror, srgb=None):
 class MainMenu(DirectObject):
     """
     Main Menu, the menu shown before starting a match or between them
+    Beware! Blob/spaghetti code incoming!
     """
     def __init__(self, ui):
         self.ui=ui
@@ -103,10 +107,13 @@ class MainMenu(DirectObject):
         self.ingore_hover=[]
         self.last_element_list=[]
         self.last_config_val=None
+        self.last_config_name=None
+        self.last_focused_entry=None
+        self.last_entry_config_name=None
 
         #we make a big canvas for all the buttons to fit, so we don't need to resize the canvas later
         #minimal canvas size is 15*64 (number of buttons * button size)
-        self.canvas_size=15*64
+        self.canvas_size=14*64
         #all the known maps must also fit the canvas, we might as well look for them now
         self.known_levels=[]
         for map_file in listdir(path+'maps'):
@@ -141,28 +148,25 @@ class MainMenu(DirectObject):
         self.elements['fixed_scroll_canvas']=self.elements['scrolled_frame'].getCanvas()
         #all the options buttons
         self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showResSelect, 'fixed_scroll_canvas')
-        self.elements['options_music_vol']=self.makeSmallButton('Music Volume', 64, self.showResSelect, 'fixed_scroll_canvas')
-        self.elements['options_sound_vol']=self.makeSmallButton('Sound Volume', 64*2, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*3, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*4, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_mouse']=self.makeSmallButton('Mouse speed', 64*5, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_key_forward']=self.makeSmallButton('KEY: forward', 64*6, self.showKeyBind, 'fixed_scroll_canvas', arg='forward')
-        self.elements['options_key_back']=self.makeSmallButton('KEY: back', 64*7, self.showKeyBind, 'fixed_scroll_canvas', arg='back')
-        self.elements['options_key_left']=self.makeSmallButton('KEY: left', 64*8, self.showKeyBind, 'fixed_scroll_canvas', arg='left')
-        self.elements['options_key_right']=self.makeSmallButton('KEY: right', 64*9, self.showKeyBind, 'fixed_scroll_canvas', arg='right')
-        self.elements['options_key_fire']=self.makeSmallButton('KEY: fire', 64*10, self.showKeyBind, 'fixed_scroll_canvas', arg='fire')
-        self.elements['options_key_zoom']=self.makeSmallButton('KEY: zoom', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='zoom')
-        self.elements['options_key_sprint']=self.makeSmallButton('KEY: sprint', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='sprint')
-        self.elements['options_key_sprint']=self.makeSmallButton('KEY: orders', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
-        self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*14, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
+        self.elements['options_audio']=self.makeSmallButton('Audio', 64, self.showVolumeSelece, 'fixed_scroll_canvas')
+        self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*2, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*3, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_mouse']=self.makeSmallButton('Mouse speed', 64*4, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_key_forward']=self.makeSmallButton('KEY: forward', 64*5, self.showKeyBind, 'fixed_scroll_canvas', arg='forward')
+        self.elements['options_key_back']=self.makeSmallButton('KEY: back', 64*6, self.showKeyBind, 'fixed_scroll_canvas', arg='back')
+        self.elements['options_key_left']=self.makeSmallButton('KEY: left', 64*7, self.showKeyBind, 'fixed_scroll_canvas', arg='left')
+        self.elements['options_key_right']=self.makeSmallButton('KEY: right', 64*8, self.showKeyBind, 'fixed_scroll_canvas', arg='right')
+        self.elements['options_key_fire']=self.makeSmallButton('KEY: fire', 64*9, self.showKeyBind, 'fixed_scroll_canvas', arg='fire')
+        self.elements['options_key_zoom']=self.makeSmallButton('KEY: zoom', 64*10, self.showKeyBind, 'fixed_scroll_canvas', arg='zoom')
+        self.elements['options_key_sprint']=self.makeSmallButton('KEY: sprint', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='sprint')
+        self.elements['options_key_sprint']=self.makeSmallButton('KEY: orders', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
+        self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
 
+        #levels
         for i, level in enumerate(self.known_levels):
             self.elements['level_'+level]=self.makeSmallButton(level, 64*i, self.showOptionMenu, 'fixed_scroll_canvas')
             #self.elements['level_'+level].hide()
 
-        #mouse wheel
-        self.accept('wheel_up', self.scroll, [-1])
-        self.accept('wheel_down', self.scroll, [1])
 
         #key-binding
         base.buttonThrowers[0].node().setButtonDownEvent('button-down')
@@ -176,6 +180,7 @@ class MainMenu(DirectObject):
         #resolution
         self.elements['res_text']=self.makeTxt('Width, Height:\n\n\nFullscreen:', self.elements['tooltip_frame'], (128,-70))
         self.elements['res_text'].setPos(128, -48)
+        #DirectEntry hell...
         self.elements['res_entry']=DirectEntry(text = "800,600",
                                             initialText="800,600",
                                             text_font=ui.font,
@@ -184,16 +189,139 @@ class MainMenu(DirectObject):
                                             frameTexture=loadTex(path+'gui\entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
-                                            focus=1,
+                                            focus=0,
                                             state=DGG.NORMAL,
                                             text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'res_entry', 'win-size'],
+                                            focusOutExtraArgs=[None, 'res_entry', 'win-size'],
+                                            extraArgs=['res_entry', 'fullscreen'],
                                             parent=self.elements['tooltip_frame'])
         self.elements['res_entry'].setPos(270, 0, -106)
         self.elements['res_entry'].guiItem.setBlinkRate(2.0)
         self.elements['res_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['res_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['res_entry']])
+        self.elements['fullscreen_entry']=DirectEntry(text = "0",
+                                            initialText="0",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'fullscreen_entry', 'fullscreen'],
+                                            focusOutExtraArgs=[None, 'fullscreen_entry', 'fullscreen'],
+                                            extraArgs=['fullscreen_entry', 'fullscreen'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['fullscreen_entry'].setPos(270, 0, -170)
+        self.elements['fullscreen_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['fullscreen_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['fullscreen_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['fullscreen_entry']])
+
+        #audio (sound and music volume)
+        self.elements['audio_text']=self.makeTxt('Music Volume:\n\n\nSound Volume:', self.elements['tooltip_frame'], (128,-70))
+        self.elements['audio_text'].setPos(128, -48)
+        #DirectEntry hell...
+        self.elements['music_entry']=DirectEntry(text = "1.0",
+                                            initialText="1.0",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'music_entry', 'music-volume'],
+                                            focusOutExtraArgs=[None, 'music_entry', 'music-volume'],
+                                            extraArgs=['music_entry', 'music-volume'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['music_entry'].setPos(270, 0, -106)
+        self.elements['music_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['music_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['music_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['music_entry']])
+        self.elements['sound_entry']=DirectEntry(text = "1.0",
+                                            initialText="1.0",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'sound_entry', 'sound-volume'],
+                                            focusOutExtraArgs=[None, 'sound_entry', 'sound-volume'],
+                                            extraArgs=['sound_entry', 'sound-volume'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['sound_entry'].setPos(270, 0, -170)
+        self.elements['sound_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['sound_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['sound_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['sound_entry']])
+
+        #mouse wheel handling
+        self.accept('wheel_up', self.scroll, [-1])
+        self.accept('wheel_down', self.scroll, [1])
+
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def setConfigFromEntry(self, text, entry, name, event=None):
+        if name is None:
+            return
+        self.last_focused_entry=entry
+        self.last_entry_config_name=name
+        if text is None:
+            text=self.elements[entry].get()
+        if text in ('true', 'True', '#t', 'yes'):
+            val=1
+        elif text in ('false', 'False', '#f', 'no'):
+            val=0
+        else:
+            allow = string.digits + '., '
+            text=re.sub('[^%s]' % allow, '', text)
+            try:
+                val=ast.literal_eval(text)
+            except:
+                try:
+                    val=[]
+                    for txt in text.split():
+                        val.append(ast.literal_eval(txt))
+                except:
+                    return
+        if self.last_config_name is None:
+            self.last_config_name=name
+            self.last_config_val=val
+        elif isinstance(self.last_config_name, basestring):
+            if self.last_config_name==name:
+                self.last_config_val=val
+            else:
+                self.last_config_name=[self.last_config_name]
+                self.last_config_name.append(name)
+                self.last_config_val=[self.last_config_val]
+                self.last_config_val.append(val)
+        elif name in self.last_config_name:
+            id=self.last_config_name.index(name)
+            self.last_config_val[id]=val
+        else:
+            self.last_config_name.append(name)
+            self.last_config_val.append(val)
 
     def setEntryCursorPos(self, entry, event):
         #print entry.guiItem.getCursorPosition()
@@ -204,17 +332,41 @@ class MainMenu(DirectObject):
         entry.guiItem.setCursorPosition(new_cursor_pos)
         #print self.ui.cursor.getPos(pixel2d)
 
+    def showVolumeSelece(self):
+        self.last_config_val=None
+        self.last_config_name=None
+        self.elements['music_entry'].set(str(cfg['music-volume']))
+        self.elements['sound_entry'].set(str(cfg['sound-volume']))
+        self.last_config_val=None
+        self.last_config_name=None
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
+        self.elements['music_entry'].show()
+        self.elements['sound_entry'].show()
+        self.elements['audio_text'].show()
+
     def showResSelect(self):
+        self.elements['res_entry'].set(str(base.win.getXSize())+', '+str(base.win.getYSize()))
+        self.last_config_val=None
+        self.last_config_name=None
         self.showElements('options_')
         self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
         self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
         self.elements['res_text'].show()
         self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
         self.elements['res_entry'].show()
+        self.elements['fullscreen_entry'].show()
 
     def saveConfig(self):
+        self.setConfigFromEntry(None,self.last_focused_entry,self.last_entry_config_name)
         if self.last_config_val:
-            cfg[self.last_config_name]=self.last_config_val
+            if isinstance(self.last_config_name, basestring):
+                cfg[self.last_config_name]=self.last_config_val
+            else:
+                for name, value in zip(self.last_config_name, self.last_config_val):
+                    cfg[name]=value
             cfg.saveConfig(path+'config.txt')
 
         self.elements['tooltip_frame'].hide()
@@ -336,6 +488,7 @@ class MainMenu(DirectObject):
         #the scrolled frame is upsidedown or something (?)
         self.elements['scrolled_frame']['frameSize'] = _rec2d(272,window_y-152)
         #self.elements['scrolled_frame'].verticalScroll['frameSize']=_rec2d(16,1)
+        self.elements['res_entry'].set(str(window_x)+', '+str(window_y))
 
     def hide(self):
         for element in self.elements.itervalues():

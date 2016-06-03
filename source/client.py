@@ -12,31 +12,7 @@ class Client(DirectObject):
     def __init__(self):
         log.debug('Starting Client')
         #open a window... but first set all the needed props
-        #check if we can open a fullscreen window at the requested size
-        if cfg['fullscreen']:
-            mods=[]
-            for mode in base.pipe.getDisplayInformation().getDisplayModes():
-                mods.append([mode.width, mode.height])
-            if cfg['win-size'] not in mods:
-                cfg['fullscreen']=False
-                log.warning('Can not open fullscreen window at '+str(cfg['win-size']))
-
-        #the window props should be set by this time, but make sure
-        wp = WindowProperties.getDefault()
-        try:
-            wp.setUndecorated(cfg['undecorated'])
-            wp.setFullscreen(cfg['fullscreen'])
-            wp.setSize(cfg['win-size'][0],cfg['win-size'][1])
-            wp.setFixedSize(cfg['win-fixed-size'])
-        except:
-            log.warning('Failed to set window properties, Traceback:')
-            for error in traceback.format_exc().splitlines()[1:]:
-                log.warning(error.strip())
-
-        #these probably won't be in the config (?)
-        wp.setOrigin(-2,-2)
-        wp.setTitle('A4P')
-        wp.setCursorHidden(True)
+        wp=self.loadWindoProperites()
         #open the window
         base.openMainWindow(props = wp)
         base.setBackgroundColor(0.06, 0.1, 0.12, 1)
@@ -67,16 +43,50 @@ class Client(DirectObject):
         base.win.setCloseRequestEvent('exit-event')
         self.accept('exit-event',self.onClientExit)
         self.accept( 'window-event', self.onWindowEvent)
+        self.accept( 'window-reset', self.onWindowReset)
 
         # Task
         taskMgr.add(self.update, 'client_update')
 
         log.debug('Client started')
 
+    def loadWindoProperites(self):
+        #check if we can open a fullscreen window at the requested size
+        if cfg['fullscreen']:
+            mods=[]
+            for mode in base.pipe.getDisplayInformation().getDisplayModes():
+                mods.append([mode.width, mode.height])
+            if list(cfg['win-size']) not in mods:
+                cfg['fullscreen']=False
+                log.warning('Can not open fullscreen window at '+str(cfg['win-size']))
+
+        #the window props should be set by this time, but make sure
+        wp = WindowProperties.getDefault()
+        try:
+            wp.setUndecorated(cfg['undecorated'])
+            wp.setFullscreen(cfg['fullscreen'])
+            wp.setSize(cfg['win-size'][0],cfg['win-size'][1])
+            wp.setFixedSize(cfg['win-fixed-size'])
+        except:
+            log.warning('Failed to set window properties, Traceback:')
+            for error in traceback.format_exc().splitlines()[1:]:
+                log.warning(error.strip())
+
+        #these probably won't be in the config (?)
+        wp.setOrigin(-2,-2)
+        wp.setTitle('A4P')
+        wp.setCursorHidden(True)
+
+        return wp
+
     #events
     def onClientExit(self):
         log.debug('Client exit')
         app.exit()
+
+    def onWindowReset(self):
+        wp=self.loadWindoProperites()
+        base.win.requestProperties(wp)
 
     def onWindowMinimize(self):
         self.window_minimized=base.win.getProperties().getMinimized()

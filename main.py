@@ -28,12 +28,13 @@ loadPrcFileData('', 'window-type none')
 from panda3d.core import *
 from direct.showbase import ShowBase
 from direct.directnotify.DirectNotify import DirectNotify
+from direct.showbase.DirectObject import DirectObject
 import sys
 import ast
 from datetime import datetime
 import traceback
 
-class Configer (object):
+class Configer (DirectObject):
     """
     The class will load a config file, it also has a dict-like interface
     """
@@ -44,7 +45,9 @@ class Configer (object):
         #solution - we store the msg and prit them later when the log system is up
         self.warning=[]
         self.debug=[]
+        self.send_events=False
         self.loadConfig(config_file)
+        self.send_events=True
 
     def getItem(self, key):
         if key in self.cfg:
@@ -64,6 +67,11 @@ class Configer (object):
 
     def __setitem__(self, key, value):
         self.cfg[key]=value
+        if self.send_events:
+            if key in ('fullscreen', 'win-size'):
+                messenger.send('window-reset')
+            elif key in ('sound-volume', 'music-volume'):
+                messenger.send('audio-reset-volume')
 
     def __contains__(self, item):
         return item in self.cfg

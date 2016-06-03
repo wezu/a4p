@@ -53,6 +53,7 @@ class Audio(DirectObject):
 
         #event handling
         self.accept('audio-sfx',self.playSound)
+        self.accept('audio-reset-volume',self.resetVolume)
 
         #task
         taskMgr.add(self.update, 'audio_update')
@@ -140,6 +141,11 @@ class Audio(DirectObject):
             self.pause_time=self.current_track.getTime()
             self.current_track.stop()
             self.seq.pause()
+
+    def resetVolume(self):
+        self.setMusicVolume(cfg['music-volume'])
+        self.setSoundVolume(cfg['sound-volume'])
+
 
     def setMusicVolume(self, volume):
         self.music_manager.setVolume(volume)
