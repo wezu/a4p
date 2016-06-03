@@ -1,5 +1,5 @@
 #A4P config file, edit at your own risk
-font-default font/DejaVuSans.ttf
+font-default font/DejaVuSansMono.ttf
 font-special font/control-freak.ttf
 fullscreen False
 game-mode normal
@@ -8,7 +8,7 @@ key-fire mouse1
 key-forward w
 key-left a
 key-menu escape
-key-orders q
+key-orders tab
 key-right d
 key-sprint lshift
 key-zoom mouse3

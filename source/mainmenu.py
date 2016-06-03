@@ -140,8 +140,8 @@ class MainMenu(DirectObject):
         self.elements['scrolled_frame'].verticalScroll.decButton.hide()
         self.elements['fixed_scroll_canvas']=self.elements['scrolled_frame'].getCanvas()
         #all the options buttons
-        self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_music_vol']=self.makeSmallButton('Music Volume', 64, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showResSelect, 'fixed_scroll_canvas')
+        self.elements['options_music_vol']=self.makeSmallButton('Music Volume', 64, self.showResSelect, 'fixed_scroll_canvas')
         self.elements['options_sound_vol']=self.makeSmallButton('Sound Volume', 64*2, self.showOptionMenu, 'fixed_scroll_canvas')
         self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*3, self.showOptionMenu, 'fixed_scroll_canvas')
         self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*4, self.showOptionMenu, 'fixed_scroll_canvas')
@@ -158,7 +158,7 @@ class MainMenu(DirectObject):
 
         for i, level in enumerate(self.known_levels):
             self.elements['level_'+level]=self.makeSmallButton(level, 64*i, self.showOptionMenu, 'fixed_scroll_canvas')
-            self.elements['level_'+level].hide()
+            #self.elements['level_'+level].hide()
 
         #mouse wheel
         self.accept('wheel_up', self.scroll, [-1])
@@ -169,12 +169,48 @@ class MainMenu(DirectObject):
         #self.accept('button-down', self.getKey)
         self.elements['key_bind_text']=self.makeTxt('alpha beta\ngamma', self.elements['tooltip_frame'], (128,-70))
         self.elements['key_bind_key_name']=self.makeTxt('???', self.elements['tooltip_frame'], (128,-140))
-        self.elements['key_bind_ok']=self.makeButton('SAVE', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.saveConfig, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg=None, suppress=1)
-        self.elements['key_bind_ok']['text_pos']=(120, -84)
+        self.elements['save_cfg']=self.makeButton('SAVE', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.saveConfig, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg=None, suppress=1)
+        self.elements['save_cfg']['text_pos']=(120, -84)
         self.elements['key_bind_key_name']['fg']=cfg['ui_color2']
 
+        #resolution
+        self.elements['res_text']=self.makeTxt('Width, Height:\n\n\nFullscreen:', self.elements['tooltip_frame'], (128,-70))
+        self.elements['res_text'].setPos(128, -48)
+        self.elements['res_entry']=DirectEntry(text = "800,600",
+                                            initialText="800,600",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=1,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['res_entry'].setPos(270, 0, -106)
+        self.elements['res_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['res_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['res_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['res_entry']])
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def setEntryCursorPos(self, entry, event):
+        #print entry.guiItem.getCursorPosition()
+        #print event.getMouse()
+        m=event.getMouse()
+        pixel_pos=entry.getRelativePoint(render2d, Point3(m[0], 0, m[1]))
+        new_cursor_pos= max(0, min(int(pixel_pos[0])+189, 125))/11
+        entry.guiItem.setCursorPosition(new_cursor_pos)
+        #print self.ui.cursor.getPos(pixel2d)
+
+    def showResSelect(self):
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
+        self.elements['res_text'].show()
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
+        self.elements['res_entry'].show()
 
     def saveConfig(self):
         if self.last_config_val:
@@ -182,7 +218,7 @@ class MainMenu(DirectObject):
             cfg.saveConfig(path+'config.txt')
 
         self.elements['tooltip_frame'].hide()
-        self.elements['key_bind_ok'].hide()
+        self.elements['save_cfg'].hide()
         self.elements['key_bind_text'].hide()
         self.elements['key_bind_key_name'].hide()
 
@@ -191,9 +227,11 @@ class MainMenu(DirectObject):
         self.elements['key_bind_key_name']['text']=keyname
 
     def showKeyBind(self, key):
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
         self.last_config_name='key-'+key
         self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
-        self.fadeIn(self.elements['key_bind_ok'], cfg['ui_color1'])
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
         self.elements['key_bind_text'].show()
         self.elements['key_bind_key_name'].show()
         self.elements['key_bind_text']['text']='Press key for:\n'+key.upper()+'\nCurrent key is:\n\n'
@@ -209,7 +247,7 @@ class MainMenu(DirectObject):
     def setShader(self, v_shader, f_shader):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
         for name, element in self.elements.iteritems():
-            if name != 'scrolled_frame':
+            if name not in ('scrolled_frame'):
                 element.setAttrib(shader_attrib)
         self.elements['scrolled_frame'].verticalScroll.setAttrib(shader_attrib)
         self.elements['scrolled_frame'].verticalScroll.thumb.setAttrib(shader_attrib)
@@ -257,7 +295,7 @@ class MainMenu(DirectObject):
             self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar2.png')
             self.showElements('hosts_',('options_','level_'))
         if main_button=='fixed_option_button':
-            self.showElements('options_', 'level_')
+            self.showElements('options_')
             self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
         for element in self.last_element_list:
             self.elements[element].hide()
@@ -267,9 +305,7 @@ class MainMenu(DirectObject):
         self.ingore_hover.append(self.elements[main_button])
         self.last_element_list=element_list
 
-    def showElements(self, show_pattern, hide_pattern, color=cfg['ui_color1']):
-        if isinstance(hide_pattern, basestring):
-            hide_pattern=[hide_pattern]
+    def showElements(self, show_pattern, color=cfg['ui_color1']):
         for  name, frame in self.elements.iteritems():
             if name.startswith('fixed_'):
                 pass
@@ -397,7 +433,7 @@ class MainMenu(DirectObject):
             frame.setColor(cfg['ui_color1'])
             frame.setTransparency(TransparencyAttrib.MAlpha)
             active_frame=DirectFrame(frameSize=_rec2d(active_area[0],active_area[1]),
-                                    frameColor=(1,0,0,0.5),
+                                    frameColor=(1,0,0,0.0),
                                     frameTexture=loadTex(path+'gui/empty_64.png'),
                                     state=DGG.NORMAL,
                                     suppressMouse=suppress,
@@ -407,6 +443,7 @@ class MainMenu(DirectObject):
             active_frame.bind(DGG.WITHIN, self.onHoverIn, [frame, hover_tex, ring_id])
             active_frame.bind(DGG.B1PRESS, self.onCmd, [frame, cmd, arg])
             active_frame.setPos(_pos2d(offset[0]+active_area[2],offset[1]+active_area[3]))
+            active_frame.wrtReparentTo(frame)
         else:
             frame=DirectFrame(frameSize=_rec2d(size[0],size[1]),
                                     frameColor=(1,1,1,1.0),
