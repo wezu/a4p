@@ -6,6 +6,7 @@ from direct.stdpy.file import listdir
 import ast
 import string
 import re
+import json
 
 from vfx import Vfx
 
@@ -63,8 +64,8 @@ class MainMenu(DirectObject):
 
         #close button
         self.elements['fixed_close_button']=self.makeButton('', (64, 64), path+'gui/empty_64.png', path+'gui/close.png', self.onExit, ui.top_right, (-64,0), 4)
-        #tutorial button
-        self.elements['fixed_tutorial_button']=self.makeButton('TUTORIAL', (256, 128), path+'gui/frame2b.png', path+'gui/frame2b.png', self.showTutorialMenu, ui.top_left, (0,0), 2, ui.font_special )
+        #training button
+        self.elements['fixed_training_button']=self.makeButton('TRAINING', (256, 128), path+'gui/frame2b.png', path+'gui/frame2b.png', self.showTutorialMenu, ui.top_left, (0,0), 2, ui.font_special )
         #host button
         self.elements['fixed_host_button']=self.makeButton('HOST', (256, 128), path+'gui/frame2b.png', path+'gui/frame2b.png', self.showHostMenu, ui.top, (-128,0), 0, ui.font_special )
         #join button
@@ -110,6 +111,7 @@ class MainMenu(DirectObject):
         self.last_config_name=None
         self.last_focused_entry=None
         self.last_entry_config_name=None
+        self.game_mode=None
 
         #we make a big canvas for all the buttons to fit, so we don't need to resize the canvas later
         #minimal canvas size is 15*64 (number of buttons * button size)
@@ -164,7 +166,7 @@ class MainMenu(DirectObject):
 
         #levels
         for i, level in enumerate(self.known_levels):
-            self.elements['level_'+level]=self.makeSmallButton(level, 64*i, self.showOptionMenu, 'fixed_scroll_canvas')
+            self.elements['level_'+level]=self.makeSmallButton(level, 64*i, self.showLevelLoad, 'fixed_scroll_canvas', arg=level)
             #self.elements['level_'+level].hide()
 
 
@@ -221,7 +223,7 @@ class MainMenu(DirectObject):
                                             focusOutExtraArgs=[None, 'fullscreen_entry', 'fullscreen'],
                                             extraArgs=['fullscreen_entry', 'fullscreen'],
                                             parent=self.elements['tooltip_frame'])
-        self.elements['fullscreen_entry'].setPos(270, 0, -170)
+        self.elements['fullscreen_entry'].setPos(270, 0, -166)
         self.elements['fullscreen_entry'].guiItem.setBlinkRate(2.0)
         self.elements['fullscreen_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['fullscreen_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['fullscreen_entry']])
@@ -270,10 +272,22 @@ class MainMenu(DirectObject):
                                             focusOutExtraArgs=[None, 'sound_entry', 'sound-volume'],
                                             extraArgs=['sound_entry', 'sound-volume'],
                                             parent=self.elements['tooltip_frame'])
-        self.elements['sound_entry'].setPos(270, 0, -170)
+        self.elements['sound_entry'].setPos(270, 0, -166)
         self.elements['sound_entry'].guiItem.setBlinkRate(2.0)
         self.elements['sound_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['sound_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['sound_entry']])
+
+
+        #host button
+        self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg='host')
+        self.elements['host_start']['text_pos']=(120, -84)
+        #start training button
+        self.elements['training_start']=self.makeButton('START', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg='training')
+        self.elements['training_start']['text_pos']=(120, -84)
+        #level describtion
+        self.elements['level_text']=self.makeTxt('level description', self.elements['tooltip_frame'], (128,-70))
+        self.elements['level_text'].setPos(128, -48)
+        self.elements['level_text'].setWordwrap(11)
 
         #mouse wheel handling
         self.accept('wheel_up', self.scroll, [-1])
@@ -281,6 +295,25 @@ class MainMenu(DirectObject):
 
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def startGame(self, event):
+        messenger.send('start-'+event,[self.last_map_name])
+
+    def showLevelLoad(self, map_name):
+        if self.game_mode=='host':
+            self.fadeIn(self.elements['host_start'], cfg['ui_color1'])
+        elif self.game_mode=='training':
+            self.fadeIn(self.elements['training_start'], cfg['ui_color1'])
+        self.last_map_name=map_name
+
+        with open(path+'maps/'+map_name+'.json') as f:
+            values=json.load(f)
+        txt=values['level']['name']+'\n\n'
+        txt+=values['level']['description']
+        self.elements['level_text'].setText(txt)
+        self.elements['level_text'].show()
+
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
 
     def setConfigFromEntry(self, text, entry, name, event=None):
         if name is None:
@@ -437,15 +470,17 @@ class MainMenu(DirectObject):
             self.rings[ring_id][2].setColor(cfg['ui_color3'])
             self.rings[ring_id][2].setForce('up', 1)
             self.rings[ring_id][2].setForce('down', 0)
-        if main_button=='fixed_tutorial_button':
+        if main_button=='fixed_training_button':
+            self.game_mode='training'
+            self.showElements('level_')
             self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar1.png')
-            self.showElements('level_','options_')
         if main_button=='fixed_host_button':
+            self.game_mode='host'
+            self.showElements('level_')
             self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar1.png')
-            self.showElements('level_','options_')
         if main_button=='fixed_join_button':
+            self.showElements('hosts_')
             self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar2.png')
-            self.showElements('hosts_',('options_','level_'))
         if main_button=='fixed_option_button':
             self.showElements('options_')
             self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
@@ -467,7 +502,7 @@ class MainMenu(DirectObject):
                 frame.hide()
 
     def showTutorialMenu(self):
-        self.showMenu('fixed_tutorial_button', 2, [])
+        self.showMenu('fixed_training_button', 2, [])
 
     def showOptionMenu(self):
         self.showMenu('fixed_option_button', 3, [])
@@ -500,7 +535,7 @@ class MainMenu(DirectObject):
 
     def show(self):
         self.elements['fixed_close_button'].show()
-        self.elements['fixed_tutorial_button'].show()
+        self.elements['fixed_training_button'].show()
         self.elements['fixed_host_button'].show()
         self.elements['fixed_join_button'].show()
         self.elements['fixed_option_button'].show()
@@ -526,7 +561,7 @@ class MainMenu(DirectObject):
 
     def hoverAllOut(self):
         self.onHoverOut(self.elements['fixed_close_button'], path+'gui/empty_64.png', 4)
-        self.onHoverOut(self.elements['fixed_tutorial_button'], path+'gui/frame2b.png', 2)
+        self.onHoverOut(self.elements['fixed_training_button'], path+'gui/frame2b.png', 2)
         self.onHoverOut(self.elements['fixed_host_button'], path+'gui/frame2b.png', 0)
         self.onHoverOut(self.elements['fixed_join_button'], path+'gui/frame3b.png', 1)
         self.onHoverOut(self.elements['fixed_option_button'], path+'gui/frame3b.png', 3)

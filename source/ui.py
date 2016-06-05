@@ -27,7 +27,7 @@ class UserInterface(DirectObject):
 
         #load fonts
         self.font = loader.loadFont(path+cfg['font-default'])
-        self.font.setPixelsPerUnit(18)
+        self.font.setPixelsPerUnit(17)
         self.font.setMinfilter(Texture.FTNearest )
         self.font.setMagfilter(Texture.FTNearest )
 
