@@ -114,8 +114,8 @@ class MainMenu(DirectObject):
         self.game_mode=None
 
         #we make a big canvas for all the buttons to fit, so we don't need to resize the canvas later
-        #minimal canvas size is 15*64 (number of buttons * button size)
-        self.canvas_size=14*64
+        #minimal canvas size is 17*64 (number of buttons * button size)
+        self.canvas_size=17*64
         #all the known maps must also fit the canvas, we might as well look for them now
         self.known_levels=[]
         for map_file in listdir(path+'maps'):
@@ -163,6 +163,9 @@ class MainMenu(DirectObject):
         self.elements['options_key_sprint']=self.makeSmallButton('KEY: sprint', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='sprint')
         self.elements['options_key_sprint']=self.makeSmallButton('KEY: orders', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
         self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
+        self.elements['options_key_gun1']=self.makeSmallButton('KEY: weapon 1', 64*14, self.showKeyBind, 'fixed_scroll_canvas', arg='gun1')
+        self.elements['options_key_gun2']=self.makeSmallButton('KEY: weapon 2', 64*15, self.showKeyBind, 'fixed_scroll_canvas', arg='gun2')
+        self.elements['options_key_gun3']=self.makeSmallButton('KEY: weapon 3', 64*16, self.showKeyBind, 'fixed_scroll_canvas', arg='gun3')
 
         #levels
         for i, level in enumerate(self.known_levels):
@@ -279,10 +282,10 @@ class MainMenu(DirectObject):
 
 
         #host button
-        self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg='host')
+        self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
         self.elements['host_start']['text_pos']=(120, -84)
         #start training button
-        self.elements['training_start']=self.makeButton('START', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47), arg='training')
+        self.elements['training_start']=self.makeButton('START', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
         self.elements['training_start']['text_pos']=(120, -84)
         #level describtion
         self.elements['level_text']=self.makeTxt('level description', self.elements['tooltip_frame'], (128,-70))
@@ -296,23 +299,27 @@ class MainMenu(DirectObject):
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
-    def startGame(self, event):
-        messenger.send('start-'+event,[self.last_map_name])
+    def startGame(self):
+        messenger.send('load-level',[self.last_map_name])
 
     def showLevelLoad(self, map_name):
-        if self.game_mode=='host':
-            self.fadeIn(self.elements['host_start'], cfg['ui_color1'])
-        elif self.game_mode=='training':
-            self.fadeIn(self.elements['training_start'], cfg['ui_color1'])
         self.last_map_name=map_name
+        try:
+            with open(path+'maps/'+map_name+'.json') as f:
+                values=json.load(f)
 
-        with open(path+'maps/'+map_name+'.json') as f:
-            values=json.load(f)
-        txt=values['level']['name']+'\n\n'
-        txt+=values['level']['description']
+            txt=values['level']['name']+'\n\n'
+            txt+=values['level']['description']
+            if self.game_mode=='host':
+                self.fadeIn(self.elements['host_start'], cfg['ui_color1'])
+            elif self.game_mode=='training':
+                self.fadeIn(self.elements['training_start'], cfg['ui_color1'])
+        except:
+            txt='Error loading level!'
+            self.elements['host_start'].hide()
+            self.elements['training_start'].hide()
         self.elements['level_text'].setText(txt)
         self.elements['level_text'].show()
-
         self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
 
     def setConfigFromEntry(self, text, entry, name, event=None):
@@ -408,6 +415,7 @@ class MainMenu(DirectObject):
         self.elements['key_bind_key_name'].hide()
 
     def getKey(self, keyname):
+        keyname=str(keyname)
         self.last_config_val=keyname
         self.elements['key_bind_key_name']['text']=keyname
 
@@ -422,7 +430,7 @@ class MainMenu(DirectObject):
         self.elements['key_bind_text']['text']='Press key for:\n'+key.upper()+'\nCurrent key is:\n\n'
         #self.accept('button-down', self.getKey)
         Sequence(Wait(0.1), Func(self.accept, 'button-down', self.getKey)).start()
-        self.elements['key_bind_key_name']['text']=cfg['key-'+key]
+        self.elements['key_bind_key_name']['text']=str(cfg['key-'+key])
 
 
     def scroll(self, direction):

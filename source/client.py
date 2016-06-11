@@ -4,6 +4,7 @@ import traceback
 from filters import Filters
 from ui import UserInterface
 from audio import Audio
+import json
 
 class Client(DirectObject):
     """
@@ -44,11 +45,23 @@ class Client(DirectObject):
         self.accept('exit-event',self.onClientExit)
         self.accept( 'window-event', self.onWindowEvent)
         self.accept( 'window-reset', self.onWindowReset)
+        self.accept( 'client-mouselock', self.setMouseLock)
+        self.accept( 'load-level', self.onLevelLoad)
 
         # Task
         taskMgr.add(self.update, 'client_update')
 
         log.debug('Client started')
+
+    def setMouseLock(self, lock):
+        wp = WindowProperties.getDefault()
+        if lock:
+            wp.setMouseMode(WindowProperties.M_confined)
+        else:
+            wp.setMouseMode(WindowProperties.M_relative)
+        if not cfg['use-os-cursor']:
+            wp.setCursorHidden(True)
+        base.win.requestProperties(wp)
 
     def loadWindoProperites(self):
         #check if we can open a fullscreen window at the requested size
@@ -75,11 +88,23 @@ class Client(DirectObject):
         #these probably won't be in the config (?)
         wp.setOrigin(-2,-2)
         wp.setTitle('A4P')
-        wp.setCursorHidden(True)
+        if not cfg['use-os-cursor']:
+            wp.setCursorHidden(True)
 
         return wp
 
     #events
+    def onLevelLoad(self, map_name):
+        with open(path+'maps/'+map_name+'.json') as f:
+            values=json.load(f)
+        #the client needs to load/setup:
+        # -visible geometry
+        # -enviroment (skybox/dome + sunlight diection + fog + ???)
+        # -water plane
+        # -unmovable (point)light sources
+        # -unmovable vfx
+        # -the player droid
+
     def onClientExit(self):
         log.debug('Client exit')
         app.exit()

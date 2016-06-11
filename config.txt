@@ -6,6 +6,9 @@ game-mode normal
 key-back s
 key-fire mouse1
 key-forward w
+key-gun1 1
+key-gun2 2
+key-gun3 3
 key-left a
 key-menu escape
 key-orders tab
@@ -29,6 +32,7 @@ ui_color3 0.33 0.56 1.0 1.0
 undecorated False
 use-filters None
 use-fxaa True
+use-os-cursor False
 want-pstats False
 win-fixed-size False
 win-size 800 600

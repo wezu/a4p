@@ -59,7 +59,10 @@ class UserInterface(DirectObject):
             self.fps_node.setPos(-128, 0, 0)
 
         #mouse cursor
-        self.cursor=self.main_menu.makeFrame(path+'gui/pointer1.png', pixel2d, (0,0), (32, 32))
+        cursor_tex=path+'gui/pointer1.png'
+        if cfg['use-os-cursor']:
+            cursor_tex=path+'gui/empty_64.png'
+        self.cursor=self.main_menu.makeFrame(cursor_tex, pixel2d, (0,0), (32, 32))
 
         #place the nodes at the right places
         self.updateGuiNodes()
