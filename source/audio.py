@@ -9,7 +9,7 @@ class Audio(DirectObject):
     """
     Plays sounds and music.
     """
-    def __init__(self, distance_factor=10.0, doppler_factor=1.0):
+    def __init__(self):
         #load all known music files
         log.debug('Audio: loading music')
 
@@ -46,8 +46,14 @@ class Audio(DirectObject):
         #list of sounds attached to objects
         self.attached_sounds=[]
 
-        self.sfx_manager.audio3dSetDistanceFactor(distance_factor)
-        self.sfx_manager.audio3dSetDopplerFactor(doppler_factor)
+        self.sfx_manager.audio3dSetDistanceFactor(cfg['sfx-distance-factor'])
+        self.sfx_manager.audio3dSetDopplerFactor(cfg['sfx-doppler-factor'])
+
+        #fp = FilterProperties()
+        #fp.addDistort(1.0)
+        #self.sfx_manager.configureFilters(fp)
+
+        self.setSpeakerMode(cfg['speakermode'])
 
         log.debug('Audio started')
 
@@ -58,6 +64,41 @@ class Audio(DirectObject):
         #task
         taskMgr.add(self.update, 'audio_update')
 
+    def setSpeakerMode(self, mode):
+        if mode == 'raw':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_raw)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_raw)
+        elif mode == 'mono':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_mono)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_mono)
+        elif mode == 'stereo':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_stereo)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_stereo)
+        elif mode == 'quad':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_quad)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_quad)
+        elif mode == 'surround':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_surround)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_surround)
+        elif mode == '5.1' or mode == 5.1:
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_5point1)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_5point1)
+        elif mode == '7.1' or mode == 7.1:
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_7point1)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_7point1)
+        elif mode == 'max':
+            self.music_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_max)
+            self.sfx_manager.setSpeakerSetup(AudioManager.SPEAKERMODE_max)
+
+    def cleanup(self):
+        log.debug('Audio: shutdown!')
+        self.playlist=None
+        self.sfx_manager.stopAllSounds()
+        self.music_manager.stopAllSounds()
+        self.sfx={}
+        self.music={}
+        self.sfx_manager.shutdown()
+        self.music_manager.shutdown()
 
     def update(self, task):
         if self.sfx_manager.getActive():
@@ -80,6 +121,7 @@ class Audio(DirectObject):
         return task.cont
 
     def playSound(self, sound, pos=(0,0,0), vel=(0,0,0)):
+        log.debug('Audio: playing: '+str(sound))
         if sound in self.sfx:
             if type(pos).__name__ == 'NodePath':
                 self.attached_sounds.append((self.sfx[sound], pos))

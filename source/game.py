@@ -12,6 +12,9 @@ import traceback
 class Game(DirectObject):
     def __init__(self):
 
+        #a task chain for loading things in the background
+        taskMgr.setupTaskChain('background_chain', numThreads = 1)
+
         #in all game modes a world, a network and a server is needed
         self.world=World()
         self.net=Network()

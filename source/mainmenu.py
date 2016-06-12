@@ -161,7 +161,7 @@ class MainMenu(DirectObject):
         self.elements['options_key_fire']=self.makeSmallButton('KEY: fire', 64*9, self.showKeyBind, 'fixed_scroll_canvas', arg='fire')
         self.elements['options_key_zoom']=self.makeSmallButton('KEY: zoom', 64*10, self.showKeyBind, 'fixed_scroll_canvas', arg='zoom')
         self.elements['options_key_sprint']=self.makeSmallButton('KEY: sprint', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='sprint')
-        self.elements['options_key_sprint']=self.makeSmallButton('KEY: orders', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
+        self.elements['options_key_orders']=self.makeSmallButton('KEY: orders', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
         self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
         self.elements['options_key_gun1']=self.makeSmallButton('KEY: weapon 1', 64*14, self.showKeyBind, 'fixed_scroll_canvas', arg='gun1')
         self.elements['options_key_gun2']=self.makeSmallButton('KEY: weapon 2', 64*15, self.showKeyBind, 'fixed_scroll_canvas', arg='gun2')
@@ -292,14 +292,33 @@ class MainMenu(DirectObject):
         self.elements['level_text'].setPos(128, -48)
         self.elements['level_text'].setWordwrap(11)
 
+        #loading
+        self.elements['loading']=self.makeTxt('LOADING...', ui.bottom, (0,50), ui.font_special)
+        self.elements['loading'].hide()
+
         #mouse wheel handling
         self.accept('wheel_up', self.scroll, [-1])
         self.accept('wheel_down', self.scroll, [1])
+        self.accept('space', self._doDebugThing)
 
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
+    def resetCamera(self):
+        base.cam.setPos(173.453, 8.02785, 143.622)
+        base.cam.setHpr(92.2724, -28.5096, -58.8269)
+
     def startGame(self):
+        #base.cam.setHpr(92.2724, -28.5096, -58.8269)
+        hpr1=LerpHprInterval(base.cam, .5, Point3(60,-90,20))
+        hpr2=LerpHprInterval(base.cam, .5, Point3(0,-90,0), bakeInStart=0, blendType='easeOut')
+        Sequence(hpr1,hpr2).start()
+        LerpPosInterval(base.cam, 0.5, Point3(0,0,180)).start()
+        for  name, frame in self.elements.iteritems():
+            if name.startswith('fixed_frame_') or name in ('fixed_close_button', 'loading'):
+                frame.show()
+            else:
+                frame.hide()
         messenger.send('load-level',[self.last_map_name])
 
     def showLevelLoad(self, map_name):
@@ -447,7 +466,8 @@ class MainMenu(DirectObject):
 
     def _doDebugThing(self):
         """A function for doing some random testing stuff, do not use """
-        messenger.send('audio-sfx',['large-explosion', (0, 0, 0)])
+        print base.cam.getPos(render)
+        print base.cam.getHpr(render)
 
     def fadeIn(self, frame, to_color, from_color=(1, 1, 1, 0)):
         frame.show()
@@ -542,6 +562,7 @@ class MainMenu(DirectObject):
             ring[2].hide()
 
     def show(self):
+        self.resetCamera()
         self.elements['fixed_close_button'].show()
         self.elements['fixed_training_button'].show()
         self.elements['fixed_host_button'].show()

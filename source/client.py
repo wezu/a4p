@@ -1,11 +1,15 @@
 from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
-import traceback
+
 from filters import Filters
 from ui import UserInterface
 from audio import Audio
-import json
+from lightmanager import LightManager
 
+import traceback
+import json
+from collections import deque
+import random
 class Client(DirectObject):
     """
     Client class handels gui/input audio and rendering
@@ -17,7 +21,7 @@ class Client(DirectObject):
         #open the window
         base.openMainWindow(props = wp)
         base.setBackgroundColor(0.06, 0.1, 0.12, 1)
-        base.disableMouse()
+        #base.disableMouse()
         base.enableParticles()
 
         #needed to determine what window event fired
@@ -33,12 +37,22 @@ class Client(DirectObject):
         elif cfg['use-fxaa']:
             self.filters.setupFxaa()
 
+        #audio sound effects (sfx) + music
         self.audio=Audio()
         self.audio.setMusic('background')
         self.audio.playMusic()
 
+        #light manager
+        self.lights=LightManager()
+
         #setup the user interface (gui+key/mouse bind)
         self.ui=UserInterface()
+
+        #some vars used later
+        self.map_name=None
+        self.loading_status=set()
+        self.level_root=render.attachNewNode('level_root')
+        self.level_root.hide()
 
         #events
         base.win.setCloseRequestEvent('exit-event')
@@ -47,11 +61,20 @@ class Client(DirectObject):
         self.accept( 'window-reset', self.onWindowReset)
         self.accept( 'client-mouselock', self.setMouseLock)
         self.accept( 'load-level', self.onLevelLoad)
+        self.accept( 'loading-done', self.onLoadingDone)
 
         # Task
         taskMgr.add(self.update, 'client_update')
 
         log.debug('Client started')
+
+    def doSomeStuffTsk(self, task):
+        x=deque(range(5000))
+        for i in xrange(999):
+           random.shuffle(x)
+           print i, x[0]
+        print 'done'
+        return task.done
 
     def setMouseLock(self, lock):
         wp = WindowProperties.getDefault()
@@ -90,13 +113,32 @@ class Client(DirectObject):
         wp.setTitle('A4P')
         if not cfg['use-os-cursor']:
             wp.setCursorHidden(True)
-
         return wp
 
-    #events
-    def onLevelLoad(self, map_name):
-        with open(path+'maps/'+map_name+'.json') as f:
+    def loadLevel(self, task):
+        log.debug('Client loading level...')
+        with open(path+'maps/'+self.map_name+'.json') as f:
             values=json.load(f)
+        #load visible objects
+        for obj in values['objects']:
+            mesh=loader.loadModel(path+obj['model'])
+            mesh.reparentTo(self.level_root)
+
+        messenger.send('loading-done', ['client'])
+        return task.done
+
+    #events
+    def onLoadingDone(self, target):
+        log.debug(str(target)+' loading done')
+        self.loading_status.add(target)
+        if self.loading_status == set(['client', 'server', 'world']):
+            self.level_root.show()
+            self.ui.main_menu.hide()
+
+    def onLevelLoad(self, map_name):
+        self.map_name=map_name
+        taskMgr.doMethodLater(1.0, self.loadLevel, 'client_loadLevel_task', taskChain = 'background_chain')
+        #taskMgr.add(self.loadLevel, 'client_loadLevel_task', taskChain = 'background_chain')
         #the client needs to load/setup:
         # -visible geometry
         # -enviroment (skybox/dome + sunlight diection + fog + ???)
@@ -107,6 +149,7 @@ class Client(DirectObject):
 
     def onClientExit(self):
         log.debug('Client exit')
+        self.audio.cleanup()
         app.exit()
 
     def onWindowReset(self):

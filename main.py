@@ -20,6 +20,25 @@ loadPrcFileData('', 'ui_color1 0.33 0.894 1.0 1.0')
 loadPrcFileData('', 'ui_color2 0.94 0.0 0.1 1.0')
 loadPrcFileData('', 'ui_color3 0.33 0.56 1.0 1.0')
 loadPrcFileData('', 'window-type none')
+loadPrcFileData('', 'sfx-distance-factor 10.0')
+loadPrcFileData('', 'sfx-doppler-factor 1.0')
+loadPrcFileData('', 'use-os-cursor False')
+loadPrcFileData('', 'speakermode raw')
+loadPrcFileData('', 'key-back s')
+loadPrcFileData('', 'key-fire mouse1')
+loadPrcFileData('', 'key-forward w')
+loadPrcFileData('', 'key-gun1 1')
+loadPrcFileData('', 'key-gun2 2')
+loadPrcFileData('', 'key-gun3 3')
+loadPrcFileData('', 'key-left a')
+loadPrcFileData('', 'key-menu escape')
+loadPrcFileData('', 'key-orders tab')
+loadPrcFileData('', 'key-right d')
+loadPrcFileData('', 'key-sprint lshift')
+loadPrcFileData('', 'key-zoom mouse3')
+loadPrcFileData('', 'sound-volume 1.0')
+loadPrcFileData('', 'music-volume 0.2')
+loadPrcFileData('', 'mouse-scroll-speed 0.01')
 #meh, just use one config file - config.txt loaded a bit later
 #if the file is lost we still have the basic valuese hardcoded here
 #from panda3d.core import loadPrcFile
@@ -30,7 +49,9 @@ from direct.showbase import ShowBase
 from direct.directnotify.DirectNotify import DirectNotify
 from direct.showbase.DirectObject import DirectObject
 import sys
+import os
 import ast
+import signal
 from datetime import datetime
 import traceback
 
@@ -48,13 +69,6 @@ class Configer (DirectObject):
         self.send_events=False
         self.loadConfig(config_file)
         self.send_events=True
-
-    def getItem(self, key):
-        if key in self.cfg:
-            return self.cfg[key]
-        else:
-            return self.getValueFromConfigVariable(key)
-        return None
 
     def __getitem__(self, key):
         if key in self.cfg:
@@ -354,7 +368,11 @@ class App():
     def exit(self):
         log.debug('Final message, shuting down.')
         log.closeLogFile()
-        base.userExit()
+        os._exit(1)
+        #os.kill(os.getpid(), signal.SIGTERM )
+        #base.userExit()
+
+
 
 builtins.app=App()
 base.run()

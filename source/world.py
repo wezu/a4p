@@ -1,6 +1,7 @@
 from panda3d.core import *
 from panda3d.bullet import *
 from direct.showbase.DirectObject import DirectObject
+import json
 
 class World(DirectObject):
     def __init__(self):
@@ -16,6 +17,7 @@ class World(DirectObject):
         #events
         self.accept('world-player-pod-force',self.applyPlayerPodForce)
         self.accept('world-move-pod-ghost',self.movePodGhost)
+        self.accept( 'load-level', self.onLevelLoad)
 
     #task
     def update(self, task):
@@ -23,14 +25,20 @@ class World(DirectObject):
         self.world.doPhysics(dt, 10, 0.001)
         return task.cont
 
-    def onLevelLoad(self, map_name):
-        with open(path+'maps/'+map_name+'.json') as f:
+    def loadLevel(self, task):
+        log.debug('World loading level...')
+        with open(path+'maps/'+self.map_name+'.json') as f:
             values=json.load(f)
         #the world needs to load/setup:
         # -collidable geometry
         # -the player droid
         # -'specjal' objects
+        messenger.send('loading-done', ['world'])
+        return task.done
 
+    def onLevelLoad(self, map_name):
+        self.map_name=map_name
+        taskMgr.add(self.loadLevel, 'world_loadLevel_task', taskChain = 'background_chain')
 
     def movePodGhost(self, pod_id, pos, hpr):
         pass

@@ -2,15 +2,22 @@
     "level":{
             "name":"Tutorial 1",
             "description":"Basic tutorial. Learn to move, shoot and other things...",
-            "geometry":"test1.egg",
-            "objects":[],
-            "objects_pos":[],
-            "objects_hpr":[],
             "spawn_points":[[0,0,0]],
             "point_lights":[],
             "time":12.0,
             "sky_dome":1
             },
+    "objects":  [
+                    {
+                    "model":"models/test1",
+                    "hpr":[0,0,0],
+                    "pos":[0,0,0],
+                    "vertex_shader":"shaders/default_v.glsl",
+                    "fragment_shader":"shaders/default_f.glsl",
+                    "shader_inputs":[],
+                    "type":"static"
+                    }
+                ],
     "rules":{
             "description":"In this tutorial you have to shoot targets, pickup and drop an orb, and take over a node",
             "teams":0,
@@ -36,13 +43,9 @@
                         "heartbeat":0,
                         "heartbeat_range":0,
                         "ghost":0,
-                        "onHit_condition":"",
                         "onHit":"",
-                        "onDeath_condition":"",
                         "onDeath":"",
-                        "onHeartbeat_condition":"",
                         "onHeartbeat":"",
-                        "onBump_condition":"",
                         "onBump":""
                     },
             "shooting_target":  { "mass":0,
@@ -50,13 +53,9 @@
                                 "heartbeat":0,
                                 "heartbeat_range":0,
                                 "ghost":0,
-                                "onHit_condition":"",
                                 "onHit":"",
-                                "onDeath_condition":"",
                                 "onDeath":"last_team.score(1); vfx('boom1')",
-                                "onHeartbeat_condition":"",
                                 "onHeartbeat":"",
-                                "onBump_condition":"",
                                 "onBump":""
                             },
             "control_node":{ "mass":0,
@@ -64,42 +63,30 @@
                             "heartbeat":1.0,
                             "heartbeat_range":3.0,
                             "ghost":1,
-                            "onHit_condition":"",
                             "onHit":"",
-                            "onDeath_condition":"",
                             "onDeath":"",
-                            "onHeartbeat_condition":"last_object.get_team() == last_team.id and last_team.score > 5",
-                            "onHeartbeat":"last_team.score(1)",
-                            "onBump_condition":" last_object.get_team() != last_team.id",
-                            "onBump":"last_team.score(1); vfx('power_up1'); last_object.set_team(last_team.id)"
+                            "onHeartbeat":"last_team.score(1) if last_object.get_team() == last_team.id and last_team.score > 5 else do()",
+                            "onBump":"do(last_team.score(1), vfx('power_up1'), last_object.set_team(last_team.id)) if last_object.get_team() != last_team.id else do()"
                         },
             "orb": {"mass":1.0,
                     "health":100,
                     "heartbeat":0,
                     "heartbeat_range":0,
                     "ghost":1,
-                    "onHit_condition":"",
                     "onHit":"",
-                    "onDeath_condition":"",
-                    "onHeartbeat_condition":"",
-                    "onDeath":"seq('wait(5.0)', 'respawn()')",
+                    "onDeath":"seq(wait(5.0), respawn())",
                     "onHeartbeat":"",
-                    "onBump_condition":"False if last_player.has_pickup() else True",
-                    "onBump":"last_player.score(1); last_player.pickup(last_object); vfx('power_up1')"
+                    "onBump":"do() if last_player.has_pickup() else do(last_player.score(1), last_player.pickup(last_object), vfx('power_up1'))"
                 },
             "orb_target":{  "mass":0,
                             "health":0,
                             "heartbeat":0,
                             "heartbeat_range":0,
                             "ghost":1,
-                            "onHit_condition":"",
                             "onHit":"",
-                            "onDeath_condition":"",
                             "onDeath":"",
-                            "onHeartbeat_condition":"",
                             "onHeartbeat":"",
-                            "onBump_condition":"last_player.has_pickup('orb')",
-                            "onBump":"last_player.pickup.kill(); last_team.score(1); vfx('power_up1'); last_object.destroy()"
+                            "onBump":"do(last_player.pickup.kill(), last_team.score(1), vfx('power_up1'), last_object.destroy()) if last_player.has_pickup('orb') else do()"
                         }
         }
     }

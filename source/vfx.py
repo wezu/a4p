@@ -18,7 +18,7 @@ def Vfx(preset_name, **kwargs):
                     rate=0.1,
                     number=2,
                     spread=1,
-                    life=3.0,
+                    life=2.5,
                     life_spread=0.5,
                     mass=20.0,
                     mass_spread=5.0)
