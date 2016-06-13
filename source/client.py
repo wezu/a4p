@@ -53,6 +53,7 @@ class Client(DirectObject):
         self.loading_status=set()
         self.level_root=render.attachNewNode('level_root')
         self.level_root.hide()
+        self.skyimg=PNMImage(path+'data/sky_grad.png')
 
         #events
         base.win.setCloseRequestEvent('exit-event')
@@ -115,14 +116,85 @@ class Client(DirectObject):
             wp.setCursorHidden(True)
         return wp
 
+    def blendPixels(self, p1, p2, blend):
+        c1=[p1[0]/255.0,p1[1]/255.0,p1[2]/255.0, p1[3]/255.0]
+        c2=[p2[0]/255.0,p2[1]/255.0,p2[2]/255.0, p2[3]/255.0]
+        return VBase4F( c1[0]*blend+c2[0]*(1.0-blend), c1[1]*blend+c2[1]*(1.0-blend), c1[2]*blend+c2[2]*(1.0-blend), c1[3]*blend+c2[3]*(1.0-blend))
+
+    def setTime(self, time):
+        self.clock=time
+        sunpos=min(0.5, max(-0.5,(time-12.0)/14.0))
+        render.setShaderInput('sunpos', sunpos)
+        x1=int(time)
+        x2=x1-1
+
+        x1=min(23, max(0,x1))
+        x2=min(23, max(0,x2))
+
+        if x2<0:
+            x2=0
+        blend=time%1.0
+
+        p1=self.skyimg.getPixel(x1, 0)
+        p2=self.skyimg.getPixel(x2, 0)
+        sunColor=self.blendPixels(p1, p2, blend)
+        sunColor[0]=sunColor[0]
+        sunColor[1]=sunColor[1]
+        sunColor[2]=sunColor[2]
+        p1=self.skyimg.getPixel(x1, 1)
+        p2=self.skyimg.getPixel(x2, 1)
+        skyColor=self.blendPixels(p1, p2, blend)
+
+        p1=self.skyimg.getPixel(x1, 2)
+        p2=self.skyimg.getPixel(x2, 2)
+        cloudColor=self.blendPixels(p1, p2, blend)
+
+        p1=self.skyimg.getPixel(x1, 3)
+        p2=self.skyimg.getPixel(x2, 3)
+        fogColor=self.blendPixels(p1, p2, blend)
+        fogColor[3]=(abs(sunpos)*0.005+0.001)
+
+        if time<6.0 or time>18.0:
+            p=15.0
+        else:
+            p=sunpos*-180.0
+        p=min(60.0, max(-60.0,p))
+
+
+        self.lights.directionalLight(Vec3(0,p,0), sunColor)
+
+        render.setShaderInput("sunColor",sunColor)
+        render.setShaderInput("skyColor",skyColor)
+        render.setShaderInput("cloudColor",cloudColor)
+        render.setShaderInput("fog", fogColor)
+
     def loadLevel(self, task):
         log.debug('Client loading level...')
         with open(path+'maps/'+self.map_name+'.json') as f:
             values=json.load(f)
+        #set the time
+        self.setTime(values['level']['time'])
         #load visible objects
         for obj in values['objects']:
             mesh=loader.loadModel(path+obj['model'])
             mesh.reparentTo(self.level_root)
+            mesh.setPosHpr(tuple(obj['pos']), tuple(obj['hpr']))
+            for name, value in obj['shader_inputs'].iteritems():
+                print name, value
+                if isinstance(value, basestring):
+                    mesh.setShaderInput(str(name), loader.loadTexture(path+value))
+                if isinstance(value, float):
+                    mesh.setShaderInput(str(name), value)
+                if isinstance(value, list):
+                    if len(value) == 2:
+                        mesh.setShaderInput(str(name), Vec2(value[0], value[1]))
+                    elif len(value) == 3:
+                        mesh.setShaderInput(str(name), Vec3(value[0], value[1], value[2]))
+                    elif len(value) == 3:
+                        mesh.setShaderInput(str(name), Vec4(value[0], value[1], value[2], value[3]))
+            mesh.setShader(Shader.load(Shader.SLGLSL, obj['vertex_shader'],obj['fragment_shader']))
+        #set the music
+        self.audio.setMusic(values['level']['music'])
 
         messenger.send('loading-done', ['client'])
         return task.done

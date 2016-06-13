@@ -16,7 +16,7 @@
   <Scalar> wrapv { repeat }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
-  <Scalar> envtype { modulate }
+  <Scalar> envtype { modulate_glow }
 }
 <Group> "Scene Root" {
   <Group> ball {

@@ -142,6 +142,8 @@ class Audio(DirectObject):
                 else:
                     log.warning('Audio: unknown track: '+track)
         self.playlist=deque(music_list)
+        if self.seq:
+            self.seq.finish()
 
     def playMusic(self):
         if self.playlist:

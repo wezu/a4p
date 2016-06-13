@@ -1,7 +1,7 @@
 from panda3d.core import *
 
 class LightManager():
-    def __init__(self, max_lights=8, ambient=(0.1, 0.1, 0.1)):
+    def __init__(self, max_lights=8, ambient=(0.2, 0.2, 0.25)):
         self.lights=[]
         #shader has a hardcoded limit of 100
         #but use more then 20 with care
@@ -11,10 +11,24 @@ class LightManager():
         self.ambientLight(ambient)
         self.update()
 
-    def directionalLight(self, hpr, color):
-        q = Quat()
-        q.setHpr(hpr)
-        render.setShaderInput('light_vec', q.getForward())
+    def directionalLight(self, hpr, color, shadow_map_size=1024, shadow_blur=0.5):
+        #a panada3d spot light has all that is needed to render shadows
+        #we use that as a shadow caster not as a light
+        self.shadow_node=render.attachNewNode('shadow_node')
+        self.shadow_caster = render.attachNewNode(Spotlight("Spot"))
+        self.shadow_caster.node().setShadowCaster(True, shadow_map_size, shadow_map_size)
+        #self.shadow_caster.node().set_color((0.9, 0.9, 0.8, 1.0))
+        #self.shadow_caster.node().showFrustum()
+        self.shadow_caster.node().getLens().setFov(60)
+        self.shadow_caster.node().getLens().setNearFar(50, 600)
+        #render.setLight(self.shadow_caster)
+        self.shadow_caster.setPos(render, 0, 0, 400)
+        self.shadow_caster.lookAt(0, 0, 0)
+        self.shadow_caster.wrtReparentTo(self.shadow_node)
+        self.shadow_node.setHpr(hpr)
+        render.set_shader_input('shadow_caster',self.shadow_caster)
+        render.set_shader_input('shadow_blur',shadow_blur)
+        render.setShaderInput('light_vec', self.shadow_caster.getPos(render)/400.0)
         render.setShaderInput('light_vec_color', color)
 
     def ambientLight(self, *args):

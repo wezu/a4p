@@ -17,9 +17,11 @@ key-sprint lshift
 key-zoom mouse3
 log-file None
 mouse-scroll-speed 0.01
-music-volume 0.2
+music-volume 0.5
 notify-level-a4p debug
 pause-on-focus-lost False
+sfx-distance-factor 10.0
+sfx-doppler-factor 1.0
 show-frame-rate-meter 1
 sound-volume 1.0
 source-dir source
@@ -37,5 +39,3 @@ use-os-cursor False
 want-pstats False
 win-fixed-size False
 win-size 800 600
-sfx-distance-factor 10.0
-sfx-doppler-factor 1.0

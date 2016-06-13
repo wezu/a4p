@@ -7,6 +7,7 @@ import ast
 import string
 import re
 import json
+import traceback
 
 from vfx import Vfx
 
@@ -334,6 +335,8 @@ class MainMenu(DirectObject):
             elif self.game_mode=='training':
                 self.fadeIn(self.elements['training_start'], cfg['ui_color1'])
         except:
+            for error in traceback.format_exc().splitlines()[1:]:
+                log.warning(error)
             txt='Error loading level!'
             self.elements['host_start'].hide()
             self.elements['training_start'].hide()
