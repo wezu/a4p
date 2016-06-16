@@ -174,11 +174,13 @@ class Client(DirectObject):
             self.ui.main_menu.hide()
             self.level_root.show()
             self.sun_and_sky.show()
-            self.droid.node.setPos(20,0,1)
+            self.ui.bindKeys()
+            self.droid.node.setPos(20,0,2)
             self.droid.lockCamera()
             self.droid.model.show()
             self.ui.in_game_menu.showCrosshair()
             self.ui.hideSoftCursor()
+            messenger.send('world-link-objects', [self.droid.node, 'pc_droid_node'])
 
     def onLevelLoad(self, map_name):
         self.map_name=map_name

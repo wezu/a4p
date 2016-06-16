@@ -18,9 +18,9 @@ key-right d
 key-sprint lshift
 key-zoom mouse3
 log-file None
+mouse-lag 0.0
 mouse-scroll-speed 0.01
 mouse-speed 10.0
-mouse-lag 0.0
 music-volume 0.5
 notify-level-a4p debug
 pause-on-focus-lost False

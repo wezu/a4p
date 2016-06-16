@@ -5,7 +5,7 @@ class PCDroid():
     def __init__(self, ui):
         self.ui=ui
         self.node=render.attachNewNode('pc_droid')
-        self.camera_node = self.node.attachNewNode('camera_node')
+        self.camera_node = render.attachNewNode('camera_node')
         self.camera_gimbal  = self.camera_node.attachNewNode("cameraGimbal")
 
         self.model=loader.loadModel(path+'models/droid')
@@ -22,6 +22,7 @@ class PCDroid():
 
     #tasks
     def update(self, task):
+        self.camera_node.setPos(render, self.node.getPos(render))
         dt = globalClock.getDt()
 
         half_x=base.win.getXSize()//2
@@ -31,6 +32,23 @@ class PCDroid():
 
         self.rotate_control(-delta_x*0.01, delta_y*0.01, dt)
         base.win.movePointer(0, half_x, half_y)
+
+        force= Vec3(0,0,0)
+        if self.ui.key_map['forward']:
+            force.setY(1.0)
+        if self.ui.key_map['back']:
+            force.setY(-1.0)
+        if self.ui.key_map['left']:
+            force.setX(-1.0)
+        if self.ui.key_map['right']:
+            force.setX(1.0)
+        force.normalize()
+        force=force*50.0
+        force = render.getRelativeVector(self.camera_node, force)
+        if force.lengthSquared() != 0.0:
+            messenger.send('world-player-pod-force',[force])
+
+
         return task.cont
 
     #functions
@@ -49,6 +67,7 @@ class PCDroid():
         LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=self.mouse_lag+(dt*10.0), blendType='easeInOut').start()
 
     def lockCamera(self, offset=(0, -6, 1.2)):
+        self.camera_node.setPos(render, self.node.getPos(render))
         base.cam.setPos(render, self.node.getPos(render))
         base.cam.setHpr(render, 0,0,0)
         base.cam.setPos(base.cam, offset)

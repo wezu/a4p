@@ -47,8 +47,7 @@ in vec3 p3d_Normal;
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelViewMatrix;
 uniform mat4 p3d_ModelMatrix;
-//uniform mat4 p3d_ModelMatrixInverseTranspose;
-uniform mat4 tpose_model_to_world; //pre 1.10 cg-style input
+uniform mat4 p3d_ModelMatrixInverseTranspose;
 
 #ifndef DISABLE_SHADOW_SIZE
 out vec4 shadow_uv;
@@ -64,8 +63,7 @@ void main()
 
     world_pos=p3d_ModelMatrix* p3d_Vertex;
     uv=p3d_MultiTexCoord0;
-    //normal=p3d_ModelMatrixInverseTranspose*p3d_Normal;
-    normal = (tpose_model_to_world * vec4(p3d_Normal, 0.0)).xyz;
+    normal=(p3d_ModelMatrixInverseTranspose* vec4(p3d_Normal, 1.0)).xyz;
     #ifndef DISABLE_SHADOW_SIZE
     shadow_uv=shadow_caster.shadowMatrix*p3d_Vertex;
     #endif
