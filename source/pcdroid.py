@@ -16,14 +16,21 @@ class PCDroid():
 
         self.mouse_speed=cfg['mouse-speed']
         self.mouse_lag=cfg['mouse-lag']
+
         # Task
         #taskMgr.add(self.update, 'pc_droid_update')
 
     #tasks
     def update(self, task):
         dt = globalClock.getDt()
-        self.rotate_control(self.ui.cursor_pos[0], self.ui.cursor_pos[2], dt)
-        base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
+
+        half_x=base.win.getXSize()//2
+        half_y=base.win.getYSize()//2
+        delta_x=half_x-base.win.getPointer(0).getX()
+        delta_y=half_y-base.win.getPointer(0).getY()
+
+        self.rotate_control(-delta_x*0.01, delta_y*0.01, dt)
+        base.win.movePointer(0, half_x, half_y)
         return task.cont
 
     #functions

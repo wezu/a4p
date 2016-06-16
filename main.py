@@ -1,4 +1,8 @@
-import __builtin__ as builtins
+import sys
+if sys.version_info.major >2:
+    import builtins
+else:
+    import __builtin__ as builtins
 from direct.showbase.AppRunnerGlobal import appRunner
 if appRunner: #run from binary/p3d
     path=appRunner.p3dFilename.getDirname()+'/'
@@ -48,7 +52,6 @@ from panda3d.core import *
 from direct.showbase import ShowBase
 from direct.directnotify.DirectNotify import DirectNotify
 from direct.showbase.DirectObject import DirectObject
-import sys
 import os
 import ast
 import signal

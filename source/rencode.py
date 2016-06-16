@@ -156,7 +156,7 @@ def dumps(obj, compress=False):
         data = encoder[type(obj)](obj)
         if compress: data = zlib.compress(data)
         return "%s%s%s" % (HEADER, option, data)
-    except KeyError, e:
+    except KeyError as e:
         raise EncodeError, "Type not supported. (%s)" % e
 ## </encoding functions> ##
 
@@ -236,7 +236,7 @@ def loads(data):
         buffer = StringIO(zlib.decompress(buffer.read()))
     try:
         value = decoder[buffer.read(1)](buffer)
-    except KeyError, e:
+    except KeyError as e:
         raise DecodeError, "Type prefix not supported. (%s)" % e
 
     return value
