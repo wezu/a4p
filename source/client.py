@@ -82,8 +82,8 @@ class Client(DirectObject):
         x=deque(range(5000))
         for i in xrange(999):
            random.shuffle(x)
-           print i, x[0]
-        print 'done'
+           #print i, x[0]
+        #print 'done'
         return task.done
 
     def setMouseLock(self, lock):

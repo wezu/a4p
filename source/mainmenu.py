@@ -192,7 +192,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -214,7 +214,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -241,7 +241,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -263,7 +263,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -289,7 +289,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -311,7 +311,7 @@ class MainMenu(DirectObject):
                                             text_font=ui.font,
                                             frameSize=_rec2d(256,64),
                                             frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            frameTexture=loadTex(path+'gui/entry.png'),
                                             text_scale=ui.font.getPixelsPerUnit(),
                                             text_pos=(-180,30),
                                             focus=0,
@@ -362,7 +362,7 @@ class MainMenu(DirectObject):
         hpr2=LerpHprInterval(base.cam, .5, Point3(0,-90,0), bakeInStart=0, blendType='easeOut')
         Sequence(hpr1,hpr2).start()
         LerpPosInterval(base.cam, 0.5, Point3(0,0,180)).start()
-        for  name, frame in self.elements.iteritems():
+        for  name, frame in self.elements.items():
             if name.startswith('fixed_frame_') or name in ('fixed_close_button', 'loading'):
                 frame.show()
             else:
@@ -523,7 +523,7 @@ class MainMenu(DirectObject):
 
     def setShader(self, v_shader, f_shader):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
-        for name, element in self.elements.iteritems():
+        for name, element in self.elements.items():
             if name not in ('scrolled_frame'):
                 element.setAttrib(shader_attrib)
         self.elements['scrolled_frame'].verticalScroll.setAttrib(shader_attrib)
@@ -589,7 +589,7 @@ class MainMenu(DirectObject):
         self.last_element_list=element_list
 
     def showElements(self, show_pattern, color=cfg['ui_color1']):
-        for  name, frame in self.elements.iteritems():
+        for  name, frame in self.elements.items():
             if name.startswith('fixed_'):
                 pass
             elif name.startswith(show_pattern):

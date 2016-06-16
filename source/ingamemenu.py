@@ -61,11 +61,11 @@ class InGameMenu(DirectObject):
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
     def hide(self):
-        for name, element in self.elements.iteritems():
+        for name, element in self.elements.items():
             element.hide()
 
     def show(self):
-        for name, element in self.elements.iteritems():
+        for name, element in self.elements.items():
             if name != 'crosshair':
                 element.show()
 
@@ -77,5 +77,5 @@ class InGameMenu(DirectObject):
 
     def setShader(self, v_shader, f_shader):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
-        for name, element in self.elements.iteritems():
+        for name, element in self.elements.items():
             element.setAttrib(shader_attrib)
