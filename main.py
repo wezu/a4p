@@ -190,7 +190,7 @@ class Configer (DirectObject):
                 config_dict[var_name]=var_value
         self.cfg=config_dict
 
-    def saveConfig(self, config_file):
+    def saveConfig(self, config_file, glsl_config_file=None):
         log.debug('Saving config file to: '+config_file)
         try:
             with open(config_file, 'w') as out_file:
@@ -199,6 +199,20 @@ class Configer (DirectObject):
                     out_file.write(key+' '+self.getCfgValueAsString(key)+'\n')
         except IOError:
             log.warning('Could not save config file: '+config_file)
+        #we now also need to write a glsl configuration file
+        if glsl_config_file:
+            log.debug('Saving GLSL config file to: '+glsl_config_file)
+            try:
+                with open(glsl_config_file, 'w') as out_file:
+                    out_file.write('//A4P config file, edit at your own risk\n')
+                    for key, value in self.cfg.iteritems():
+                        if key.startswith('glsl-'):
+                            if value == 0:
+                                out_file.write('#define DISABLE_'+key[5:].replace('-','_').upper()+' \n')
+                if self.send_events:
+                    messenger.send('reload-shaders')
+            except IOError:
+                log.warning('Could not save GLSL config file: '+glsl_config_file)
 
     def setCfgValueFromString(self, var_name, value):
         if var_name in self.cfg:

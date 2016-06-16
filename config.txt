@@ -3,6 +3,8 @@ font-default font/DejaVuSansMono.ttf
 font-special font/control-freak.ttf
 fullscreen False
 game-mode normal
+glsl-shadow-blur 0.5
+glsl-shadow-size 1024
 key-back s
 key-fire mouse1
 key-forward w
@@ -17,6 +19,7 @@ key-sprint lshift
 key-zoom mouse3
 log-file None
 mouse-scroll-speed 0.01
+mouse-speed 10.0
 music-volume 0.5
 notify-level-a4p debug
 pause-on-focus-lost False

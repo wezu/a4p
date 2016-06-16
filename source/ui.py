@@ -4,7 +4,7 @@ from direct.gui.DirectGui import *
 from direct.interval.IntervalGlobal import *
 
 from mainmenu import MainMenu
-
+from ingamemenu import InGameMenu
 
 #Helper functions
 def _pos2d(x,y):
@@ -53,6 +53,10 @@ class UserInterface(DirectObject):
         #make the main menu
         self.main_menu=MainMenu(self)
 
+        #make the in-game menu
+        self.in_game_menu=InGameMenu(self)
+        self.in_game_menu.hide()
+
         if cfg['show-frame-rate-meter']:
             self.fps_node=NodePath(base.frameRateMeter)
             self.fps_node.wrtReparentTo(self.top_right)
@@ -63,9 +67,17 @@ class UserInterface(DirectObject):
         if cfg['use-os-cursor']:
             cursor_tex=path+'gui/empty_64.png'
         self.cursor=self.main_menu.makeFrame(cursor_tex, pixel2d, (0,0), (32, 32))
-
+        self.cursor_pos=(0,0,0)
         #place the nodes at the right places
         self.updateGuiNodes()
+
+        #keybinding
+        self.key_map={'back':False,
+                    'fire':False,
+                    'forward':False,
+                    'left':False,
+                    'right':False,
+                    'sprint':False}
 
 
         # Task
@@ -76,8 +88,8 @@ class UserInterface(DirectObject):
         if base.mouseWatcherNode.hasMouse():
             self.cursor.show()
             mpos = base.mouseWatcherNode.getMouse()
-            pos2d=Point3(mpos.getX() ,0, mpos.getY())
-            self.cursor.setPos(pixel2d.getRelativePoint(render2d, pos2d))
+            self.cursor_pos=Point3(mpos.getX() ,0, mpos.getY())
+            self.cursor.setPos(pixel2d.getRelativePoint(render2d, self.cursor_pos))
         else:
             self.onWindowMouseOut()
         return task.cont
@@ -86,6 +98,32 @@ class UserInterface(DirectObject):
         if not self.cursor.isHidden():
             self.main_menu.hoverAllOut()
             self.cursor.hide()
+
+    def hideSoftCursor(self):
+        self.cursor['frameTexture']=loader.loadTexture(path+'gui/empty_64.png')
+
+    def bindKeys(self):
+        self.ignoreAll()
+        self.accept(cfg['key-back'], self.key_map.__setitem__, ["back", True])
+        self.accept(cfg['key-fire'], self.key_map.__setitem__, ["fire", True])
+        self.accept(cfg['key-forward'], self.key_map.__setitem__, ["forward", True])
+        self.accept(cfg['key-left'], self.key_map.__setitem__, ["left", True])
+        self.accept(cfg['key-right'], self.key_map.__setitem__, ["right", True])
+        self.accept(cfg['key-sprint'], self.key_map.__setitem__, ["sprint", True])
+        self.accept(cfg['key-back']+'-up', self.key_map.__setitem__, ["back", False])
+        self.accept(cfg['key-fire']+'-up', self.key_map.__setitem__, ["fire", False])
+        self.accept(cfg['key-forward']+'-up', self.key_map.__setitem__, ["forward", False])
+        self.accept(cfg['key-left']+'-up', self.key_map.__setitem__, ["left", False])
+        self.accept(cfg['key-right']+'-up', self.key_map.__setitem__, ["right", False])
+        self.accept(cfg['key-sprint']+'-up', self.key_map.__setitem__, ["sprint", False])
+
+        #cfg['key-zoom']
+        #cfg['key-gun1']
+        #cfg['key-gun2']
+        #cfg['key-gun3']
+        #cfg['key-menu']
+        #cfg['key-orders']
+
 
 
     def updateGuiNodes(self):

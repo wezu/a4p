@@ -4,7 +4,7 @@
             "description":"Basic tutorial. Learn to move, shoot and other things...",
             "spawn_points":[[0,0,0]],
             "point_lights":[],
-            "time":15.0,
+            "time":14.5,
             "sky_dome":1,
             "music":["plasmaclimb", "starflash","pure_evil"]
             },
@@ -27,16 +27,6 @@
                     "vertex_shader":"shaders/default_v.glsl",
                     "fragment_shader":"shaders/default_f.glsl",
                     "shader_inputs":{},
-                    "type":"static"
-                    },
-                    {
-                    "model":"models/droid",
-                    "hpr":[0,0,0],
-                    "pos":[20,0,1],
-                    "scale":1.0,
-                    "vertex_shader":"shaders/droid_v.glsl",
-                    "fragment_shader":"shaders/droid_f.glsl",
-                    "shader_inputs":{"glow_color":[0.33, 0.894, 1.0]},
                     "type":"static"
                     }
                 ],

@@ -5,11 +5,14 @@ from filters import Filters
 from ui import UserInterface
 from audio import Audio
 from lightmanager import LightManager
+from skybox import Skybox
+from pcdroid import PCDroid
 
 import traceback
 import json
 from collections import deque
 import random
+
 class Client(DirectObject):
     """
     Client class handels gui/input audio and rendering
@@ -21,7 +24,7 @@ class Client(DirectObject):
         #open the window
         base.openMainWindow(props = wp)
         base.setBackgroundColor(0.06, 0.1, 0.12, 1)
-        #base.disableMouse()
+        base.disableMouse()
         base.enableParticles()
 
         #needed to determine what window event fired
@@ -48,12 +51,17 @@ class Client(DirectObject):
         #setup the user interface (gui+key/mouse bind)
         self.ui=UserInterface()
 
+        #skybox
+        self.sun_and_sky=Skybox(self.lights)
+
+        #player (character) droid
+        self.droid=PCDroid(self.ui)
+
         #some vars used later
         self.map_name=None
         self.loading_status=set()
         self.level_root=render.attachNewNode('level_root')
         self.level_root.hide()
-        self.skyimg=PNMImage(path+'data/sky_grad.png')
 
         #events
         base.win.setCloseRequestEvent('exit-event')
@@ -63,6 +71,7 @@ class Client(DirectObject):
         self.accept( 'client-mouselock', self.setMouseLock)
         self.accept( 'load-level', self.onLevelLoad)
         self.accept( 'loading-done', self.onLoadingDone)
+        self.accept( 'reload-shaders', self.onShaderReload)
 
         # Task
         taskMgr.add(self.update, 'client_update')
@@ -116,71 +125,20 @@ class Client(DirectObject):
             wp.setCursorHidden(True)
         return wp
 
-    def blendPixels(self, p1, p2, blend):
-        c1=[p1[0]/255.0,p1[1]/255.0,p1[2]/255.0, p1[3]/255.0]
-        c2=[p2[0]/255.0,p2[1]/255.0,p2[2]/255.0, p2[3]/255.0]
-        return VBase4F( c1[0]*blend+c2[0]*(1.0-blend), c1[1]*blend+c2[1]*(1.0-blend), c1[2]*blend+c2[2]*(1.0-blend), c1[3]*blend+c2[3]*(1.0-blend))
-
-    def setTime(self, time):
-        self.clock=time
-        sunpos=min(0.5, max(-0.5,(time-12.0)/14.0))
-        render.setShaderInput('sunpos', sunpos)
-        x1=int(time)
-        x2=x1-1
-
-        x1=min(23, max(0,x1))
-        x2=min(23, max(0,x2))
-
-        if x2<0:
-            x2=0
-        blend=time%1.0
-
-        p1=self.skyimg.getPixel(x1, 0)
-        p2=self.skyimg.getPixel(x2, 0)
-        sunColor=self.blendPixels(p1, p2, blend)
-        sunColor[0]=sunColor[0]
-        sunColor[1]=sunColor[1]
-        sunColor[2]=sunColor[2]
-        p1=self.skyimg.getPixel(x1, 1)
-        p2=self.skyimg.getPixel(x2, 1)
-        skyColor=self.blendPixels(p1, p2, blend)
-
-        p1=self.skyimg.getPixel(x1, 2)
-        p2=self.skyimg.getPixel(x2, 2)
-        cloudColor=self.blendPixels(p1, p2, blend)
-
-        p1=self.skyimg.getPixel(x1, 3)
-        p2=self.skyimg.getPixel(x2, 3)
-        fogColor=self.blendPixels(p1, p2, blend)
-        fogColor[3]=(abs(sunpos)*0.005+0.001)
-
-        if time<6.0 or time>18.0:
-            p=15.0
-        else:
-            p=sunpos*-180.0
-        p=min(60.0, max(-60.0,p))
-
-
-        self.lights.directionalLight(Vec3(0,p,0), sunColor)
-
-        render.setShaderInput("sunColor",sunColor)
-        render.setShaderInput("skyColor",skyColor)
-        render.setShaderInput("cloudColor",cloudColor)
-        render.setShaderInput("fog", fogColor)
-
     def loadLevel(self, task):
         log.debug('Client loading level...')
         with open(path+'maps/'+self.map_name+'.json') as f:
             values=json.load(f)
         #set the time
-        self.setTime(values['level']['time'])
+        self.sun_and_sky.setTime(values['level']['time'])
+        #self.sun_and_sky.show()
         #load visible objects
-        for obj in values['objects']:
+        for id, obj in enumerate(values['objects']):
             mesh=loader.loadModel(path+obj['model'])
             mesh.reparentTo(self.level_root)
             mesh.setPosHpr(tuple(obj['pos']), tuple(obj['hpr']))
+            mesh.setTag('id_'+str(id), str(id)) #we may need to find this mesh later to link it to a Bullet object
             for name, value in obj['shader_inputs'].iteritems():
-                print name, value
                 if isinstance(value, basestring):
                     mesh.setShaderInput(str(name), loader.loadTexture(path+value))
                 if isinstance(value, float):
@@ -195,20 +153,36 @@ class Client(DirectObject):
             mesh.setShader(Shader.load(Shader.SLGLSL, obj['vertex_shader'],obj['fragment_shader']))
         #set the music
         self.audio.setMusic(values['level']['music'])
-
+        #self.level_root.prepareScene(base.win.getGsg())
         messenger.send('loading-done', ['client'])
         return task.done
 
     #events
+    def onShaderReload(self):
+        log.debug('Client: Reloading shaders')
+        for mesh in self.level_root.getChildren():
+            shader=mesh.getShader()
+            v_shader=shader.getFilename(Shader.ST_vertex)
+            f_shader=shader.getFilename(Shader.ST_fragment)
+            mesh.setShader(Shader.load(Shader.SLGLSL, v_shader,f_shader))
+        self.ui.main_menu.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
     def onLoadingDone(self, target):
         log.debug(str(target)+' loading done')
         self.loading_status.add(target)
         if self.loading_status == set(['client', 'server', 'world']):
-            self.level_root.show()
             self.ui.main_menu.hide()
+            self.level_root.show()
+            self.sun_and_sky.show()
+            self.droid.node.setPos(20,0,1)
+            self.droid.lockCamera()
+            self.droid.model.show()
+            self.ui.in_game_menu.showCrosshair()
+            self.ui.hideSoftCursor()
 
     def onLevelLoad(self, map_name):
         self.map_name=map_name
+        #we wait 1.0 sec for the loading animation to finish just in case if loading takes < 1.0 sec.
         taskMgr.doMethodLater(1.0, self.loadLevel, 'client_loadLevel_task', taskChain = 'background_chain')
         #taskMgr.add(self.loadLevel, 'client_loadLevel_task', taskChain = 'background_chain')
         #the client needs to load/setup:
@@ -235,6 +209,8 @@ class Client(DirectObject):
     def onWindowFocus(self):
         self.window_focused=base.win.getProperties().getForeground()
         log.debug('window-event: Focus set to '+str(self.window_focused))
+        if not self.window_focused:
+            self.ui.cursor_pos=(0,0,0)
         if cfg['pause-on-focus-lost']:
             if not self.window_focused:
                 self.audio.pauseMusic()

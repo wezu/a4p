@@ -1,5 +1,6 @@
 //GLSL
 #version 140
+#pragma include "inc_config.glsl"
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelViewMatrixInverse;
 uniform vec2 screen_size;
@@ -15,7 +16,7 @@ flat out float point_size;
 
 void main()
     {
-    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;    
+    gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
     float dist =distance(p3d_Vertex.xyz,camera_pos);
     point_size = (radius*screen_size.y*0.3)/ dist;
     gl_PointSize = point_size;

@@ -18,7 +18,6 @@ class Server(DirectObject):
         #events
         self.accept('server-start',self.start)
         self.accept('server-stop',self.stop)
-        self.accept( 'load-level', self.onLevelLoad)
 
         log.debug('Server started')
 
@@ -38,7 +37,7 @@ class Server(DirectObject):
 
 
     def start(self):
-        self.accept('load-level',self.loadLevel)
+        self.accept('load-level',self.onLevelLoad)
 
     def stop(self):
         self.ignore('load-level')

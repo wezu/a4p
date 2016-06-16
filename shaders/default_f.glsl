@@ -1,5 +1,8 @@
 #version 150
 
+#pragma include "inc_config.glsl"
+
+#ifndef DISABLE_SHADOW_SIZE
 struct p3d_LightSourceParameters {
   // Primary light color.
   vec4 color;
@@ -35,6 +38,8 @@ struct p3d_LightSourceParameters {
 };
 
 uniform p3d_LightSourceParameters shadow_caster;
+uniform float shadow_blur;
+#endif
 
 uniform vec4 light_color[100];
 uniform vec4 light_pos[100];
@@ -45,7 +50,7 @@ uniform vec3 ambient;
 uniform vec3 light_vec;
 uniform vec3 light_vec_color;
 uniform vec4 fog;
-uniform float shadow_blur;
+
 
 uniform sampler2D p3d_Texture0; //rgba color texture
 uniform sampler2D p3d_Texture1; //rgba normal+gloss texture
@@ -53,7 +58,11 @@ uniform sampler2D p3d_Texture1; //rgba normal+gloss texture
 in vec2 uv;
 in vec4 world_pos;
 in vec3 normal;
+
+#ifndef DISABLE_SHADOW_SIZE
 in vec4 shadow_uv;
+#endif
+
 
 out vec4 final_color;
 
@@ -150,15 +159,20 @@ void main()
     color+=specular;
 
     //shadows
-    //color*= textureProj(shadow_caster.shadowMap,shadow_uv, 0.1);
-    color*=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, shadow_blur);
+    #ifndef DISABLE_SHADOW_SIZE
+        #ifndef DISABLE_SHADOW_BLUR
+        color*=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, shadow_blur);
+        #else
+        color*= textureProj(shadow_caster.shadowMap,vec4(shadow_uv.xy, shadow_uv.z-0.0001, shadow_uv.w));
+        #endif
+    #endif
 
     //...ambient
     //color+= ambient;
     color+= ambient+max(dot(N,up), -0.2)*ambient;
 
     //fog
-    float fog_factor=distance(world_pos.xyz,camera_pos)*0.002;
+    float fog_factor=distance(world_pos.xyz,camera_pos)*0.003;
     fog_factor=clamp(fog_factor-0.1, 0.0, 1.0);
     //final color with fog
     final_color=vec4(mix(color*color_map.rgb, fog.rgb, fog_factor), color_map.a);

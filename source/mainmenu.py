@@ -152,7 +152,7 @@ class MainMenu(DirectObject):
         #all the options buttons
         self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showResSelect, 'fixed_scroll_canvas')
         self.elements['options_audio']=self.makeSmallButton('Audio', 64, self.showVolumeSelece, 'fixed_scroll_canvas')
-        self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*2, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*2, self.showShadowsSetup, 'fixed_scroll_canvas')
         self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*3, self.showOptionMenu, 'fixed_scroll_canvas')
         self.elements['options_mouse']=self.makeSmallButton('Mouse speed', 64*4, self.showOptionMenu, 'fixed_scroll_canvas')
         self.elements['options_key_forward']=self.makeSmallButton('KEY: forward', 64*5, self.showKeyBind, 'fixed_scroll_canvas', arg='forward')
@@ -280,7 +280,54 @@ class MainMenu(DirectObject):
         self.elements['sound_entry'].guiItem.setBlinkRate(2.0)
         self.elements['sound_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['sound_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['sound_entry']])
-
+        #shadows setup
+        self.elements['shadow_text']=self.makeTxt('Resolution (0=off):\n\n\nBlur Amout (0=off):', self.elements['tooltip_frame'], (128,-70))
+        self.elements['shadow_text'].setPos(128, -48)
+        #DirectEntry hell...
+        self.elements['shadow_size_entry']=DirectEntry(text = "1024",
+                                            initialText="1024",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'shadow_size_entry', 'glsl-shadow-size'],
+                                            focusOutExtraArgs=[None, 'shadow_size_entry', 'glsl-shadow-size'],
+                                            extraArgs=['shadow_size_entry', 'glsl-shadow-size'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['shadow_size_entry'].setPos(270, 0, -106)
+        self.elements['shadow_size_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['shadow_size_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['shadow_size_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['shadow_size_entry']])
+        self.elements['shadow_blur_entry']=DirectEntry(text = "0.5",
+                                            initialText="0.5",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,64),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui\entry.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,30),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'shadow_blur_entry', 'glsl-shadow-blur'],
+                                            focusOutExtraArgs=[None, 'shadow_blur_entry', 'glsl-shadow-blur'],
+                                            extraArgs=['shadow_blur_entry', 'glsl-shadow-blur'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['shadow_blur_entry'].setPos(270, 0, -166)
+        self.elements['shadow_blur_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['shadow_blur_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['shadow_blur_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['shadow_blur_entry']])
 
         #host button
         self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
@@ -288,13 +335,13 @@ class MainMenu(DirectObject):
         #start training button
         self.elements['training_start']=self.makeButton('START', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
         self.elements['training_start']['text_pos']=(120, -84)
-        #level describtion
+        #level description
         self.elements['level_text']=self.makeTxt('level description', self.elements['tooltip_frame'], (128,-70))
         self.elements['level_text'].setPos(128, -48)
         self.elements['level_text'].setWordwrap(11)
 
         #loading
-        self.elements['loading']=self.makeTxt('LOADING...', ui.bottom, (0,50), ui.font_special)
+        self.elements['loading']=self.makeTxt('DEPLOYING...', ui.bottom, (0,50), ui.font_special)
         self.elements['loading'].hide()
 
         #mouse wheel handling
@@ -351,9 +398,9 @@ class MainMenu(DirectObject):
         self.last_entry_config_name=name
         if text is None:
             text=self.elements[entry].get()
-        if text in ('true', 'True', '#t', 'yes'):
+        if text in ('true', 'True', '#t', 'yes', 'on'):
             val=1
-        elif text in ('false', 'False', '#f', 'no'):
+        elif text in ('false', 'False', '#f', 'no', 'off'):
             val=0
         else:
             allow = string.digits + '., '
@@ -394,6 +441,21 @@ class MainMenu(DirectObject):
         entry.guiItem.setCursorPosition(new_cursor_pos)
         #print self.ui.cursor.getPos(pixel2d)
 
+    def showShadowsSetup(self):
+        self.last_config_val=None
+        self.last_config_name=None
+        self.elements['shadow_size_entry'].set(str(cfg['glsl-shadow-size']))
+        self.elements['shadow_blur_entry'].set(str(cfg['glsl-shadow-blur']))
+        self.last_config_val=None
+        self.last_config_name=None
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
+        self.elements['shadow_size_entry'].show()
+        self.elements['shadow_blur_entry'].show()
+        self.elements['shadow_text'].show()
+
     def showVolumeSelece(self):
         self.last_config_val=None
         self.last_config_name=None
@@ -423,13 +485,13 @@ class MainMenu(DirectObject):
 
     def saveConfig(self):
         self.setConfigFromEntry(None,self.last_focused_entry,self.last_entry_config_name)
-        if self.last_config_val:
+        if self.last_config_val is not None:
             if isinstance(self.last_config_name, basestring):
                 cfg[self.last_config_name]=self.last_config_val
             else:
                 for name, value in zip(self.last_config_name, self.last_config_val):
                     cfg[name]=value
-            cfg.saveConfig(path+'config.txt')
+            cfg.saveConfig(path+'config.txt', path+'shaders/inc_config.glsl')
 
         self.elements['tooltip_frame'].hide()
         self.elements['save_cfg'].hide()
@@ -502,14 +564,17 @@ class MainMenu(DirectObject):
             self.rings[ring_id][2].setForce('up', 1)
             self.rings[ring_id][2].setForce('down', 0)
         if main_button=='fixed_training_button':
+            messenger.send('server-start')
             self.game_mode='training'
             self.showElements('level_')
             self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar1.png')
         if main_button=='fixed_host_button':
+            messenger.send('server-start')
             self.game_mode='host'
             self.showElements('level_')
             self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar1.png')
         if main_button=='fixed_join_button':
+            messenger.send('server-stop')
             self.showElements('hosts_')
             self.showContentFrame(line='link_line_2', bar='link_bar_2', tex='gui/bar2.png')
         if main_button=='fixed_option_button':
@@ -585,7 +650,7 @@ class MainMenu(DirectObject):
 
     def onCmd(self, frame, cmd, arg=[], event=None):
         self.ignore('button-down')
-        messenger.send('audio-sfx',['click'])
+        messenger.send('audio-sfx',['click', base.cam])
         if arg:
             cmd(arg)
         else:

@@ -103,10 +103,10 @@ class Audio(DirectObject):
     def update(self, task):
         if self.sfx_manager.getActive():
             dt=globalClock.getDt()
-            pos = base.camera.getPos(render)
-            forward = render.getRelativeVector(base.camera, Vec3.forward())
-            up = render.getRelativeVector(base.camera, Vec3.up())
-            vel = base.camera.getPosDelta(render)/dt
+            pos = base.cam.getPos(render)
+            forward = render.getRelativeVector(base.cam, Vec3.forward())
+            up = render.getRelativeVector(base.cam, Vec3.up())
+            vel = base.cam.getPosDelta(render)/dt
             self.sfx_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2])
 
             #a copy is needed to remove items from the list we are iterating
@@ -143,7 +143,10 @@ class Audio(DirectObject):
                     log.warning('Audio: unknown track: '+track)
         self.playlist=deque(music_list)
         if self.seq:
-            self.seq.finish()
+            try:
+                self.seq.finish()
+            except:
+                log.warning('Audio: something went wrong')
 
     def playMusic(self):
         if self.playlist:

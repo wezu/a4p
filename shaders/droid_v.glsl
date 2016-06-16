@@ -1,6 +1,8 @@
 //GLSL
 #version 140
+#pragma include "inc_config.glsl"
 
+#ifndef DISABLE_SHADOW_SIZE
 struct p3d_LightSourceParameters {
   // Primary light color.
   vec4 color;
@@ -36,6 +38,7 @@ struct p3d_LightSourceParameters {
 };
 
 uniform p3d_LightSourceParameters shadow_caster;
+#endif
 
 in vec2 p3d_MultiTexCoord0;
 in vec4 p3d_Vertex;
@@ -47,9 +50,11 @@ uniform mat4 p3d_ModelMatrix;
 //uniform mat4 p3d_ModelMatrixInverseTranspose;
 uniform mat4 tpose_model_to_world; //pre 1.10 cg-style input
 
+#ifndef DISABLE_SHADOW_SIZE
+out vec4 shadow_uv;
+#endif
 
 out vec2 uv;
-out vec4 shadow_uv;
 out vec4 world_pos;;
 out vec3 normal;
 
@@ -61,5 +66,7 @@ void main()
     uv=p3d_MultiTexCoord0;
     //normal=p3d_ModelMatrixInverseTranspose*p3d_Normal;
     normal = (tpose_model_to_world * vec4(p3d_Normal, 0.0)).xyz;
+    #ifndef DISABLE_SHADOW_SIZE
     shadow_uv=shadow_caster.shadowMatrix*p3d_Vertex;
+    #endif
     }
