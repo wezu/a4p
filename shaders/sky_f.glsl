@@ -31,7 +31,7 @@ void main()
     vec4 cloud=((cloudColor-out_color)*(tex1.r*tex2.r)*blend)*cloud_alpha;
     float sun=tex3.a*(1.0-(tex1.r*tex2.r)*blend);
     out_color+=cloud;
-    out_color=mix(out_color, sunColor*1.5, sun);
+    out_color=mix(out_color, sunColor*2.5, sun);
     out_color=mix(fog, out_color, blend2);
     sun=mix(0.0, sun, blend2);
     out_color.a=1.0;

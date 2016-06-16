@@ -4,7 +4,7 @@
             "description":"Basic tutorial. Learn to move, shoot and other things...",
             "spawn_points":[[0,0,0]],
             "point_lights":[],
-            "time":14.5,
+            "time":7.2,
             "sky_dome":1,
             "music":["plasmaclimb", "starflash","pure_evil"]
             },
