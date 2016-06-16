@@ -20,6 +20,7 @@ key-zoom mouse3
 log-file None
 mouse-scroll-speed 0.01
 mouse-speed 10.0
+mouse-lag 0.2
 music-volume 0.5
 notify-level-a4p debug
 pause-on-focus-lost False

@@ -531,8 +531,9 @@ class MainMenu(DirectObject):
 
     def _doDebugThing(self):
         """A function for doing some random testing stuff, do not use """
-        print base.cam.getPos(render)
-        print base.cam.getHpr(render)
+        pass
+        #print base.cam.getPos(render)
+        #print base.cam.getHpr(render)
 
     def fadeIn(self, frame, to_color, from_color=(1, 1, 1, 0)):
         frame.show()

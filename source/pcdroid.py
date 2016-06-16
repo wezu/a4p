@@ -15,7 +15,7 @@ class PCDroid():
         self.model.hide()
 
         self.mouse_speed=cfg['mouse-speed']
-
+        self.mouse_lag=cfg['mouse-lag']
         # Task
         #taskMgr.add(self.update, 'pc_droid_update')
 
@@ -38,8 +38,8 @@ class PCDroid():
             self.camera_gimbal.setP(30.0)
 
     def rotate_control(self, h, p, dt):
-        LerpFunc(self._rotateCamH,fromData=0,toData=h, duration=dt*10.0).start()
-        LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=dt*10.0).start()
+        LerpFunc(self._rotateCamH,fromData=0,toData=h, duration=self.mouse_lag+(dt*10.0), blendType='easeInOut').start()
+        LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=self.mouse_lag+(dt*10.0), blendType='easeInOut').start()
 
     def lockCamera(self, offset=(0, -6, 1.2)):
         base.cam.setPos(render, self.node.getPos(render))

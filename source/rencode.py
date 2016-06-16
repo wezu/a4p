@@ -248,18 +248,3 @@ try:
     loads = psyco.proxy(loads)
 except ImportError:
     pass
-
-if __name__ == "__main__":
-    value = (1,2,(678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,
-            1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,
-            1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9,1,33.5,678.9))
-    data = dumps(value, True)
-    print "input is:"
-    print value
-    print "####"
-    print "encoded:"
-    print data
-    x = loads(data)
-    print "####"
-    print "decoded:"
-    print x
