@@ -38,7 +38,6 @@ struct p3d_LightSourceParameters {
 };
 
 uniform p3d_LightSourceParameters shadow_caster;
-uniform float shadow_blur;
 #endif
 
 uniform vec4 light_color[100];
@@ -62,9 +61,6 @@ in vec3 normal;
 #ifndef DISABLE_SHADOW_SIZE
 in vec4 shadow_uv;
 #endif
-
-
-out vec4 final_color;
 
 
 float textureProjSoft(sampler2DShadow tex, vec4 uv, float bias, float blur)
@@ -160,10 +156,10 @@ void main()
 
     //shadows
     #ifndef DISABLE_SHADOW_SIZE
-        #ifndef DISABLE_SHADOW_BLUR
-        color*=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, shadow_blur);
-        #else
+        #ifndef SHADOW_BLUR
         color*= textureProj(shadow_caster.shadowMap,vec4(shadow_uv.xy, shadow_uv.z-0.0001, shadow_uv.w));
+        #else
+        color*=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, SHADOW_BLUR);
         #endif
     #endif
 
@@ -172,14 +168,16 @@ void main()
     color+= ambient+max(dot(N,up), -0.2)*ambient;
 
     //glow
-    color+=(1.0-color_map.a)*glow_color;
+    float glow=(1.0-color_map.a);
+    color+=glow*glow_color;
 
     //fog
-    float fog_factor=distance(world_pos.xyz,camera_pos)*0.003;
-    fog_factor=clamp(fog_factor-0.1, 0.0, 1.0);
+    float fog_factor=distance(world_pos.xyz,camera_pos);
+    float blur_factor=clamp((fog_factor*0.002)-0.2, 0.0, 1.0);
+    fog_factor=clamp((fog_factor*0.003)-0.1, 0.0, 1.0);
     //final color with fog
-    final_color=vec4(mix(color*color_map.rgb, fog.rgb, fog_factor), color_map.a);
-
-    //final color
-    //final_color=vec4(color*color_map.rgb, color_map.a);
+    vec4 final_color=vec4(mix(color*color_map.rgb, fog.rgb, fog_factor), color_map.a);
+    vec4 final_aux=vec4(blur_factor, specular, 0.0,final_color.a);
+    gl_FragData[0]=final_color;
+    gl_FragData[1]=final_aux;
     }

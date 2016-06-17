@@ -11,8 +11,7 @@ class LightManager():
         self.ambientLight(ambient)
         self.update()
 
-    def directionalLight(self, hpr, color, shadow_map_size=1024, shadow_blur=0.5):
-        shadow_blur=float(shadow_blur)
+    def directionalLight(self, hpr, color, shadow_map_size=1024):
         shadow_map_size=int(shadow_map_size)
         #a panada3d spot light has all that is needed to render shadows
         #we use that as a shadow caster not as a light
@@ -31,7 +30,7 @@ class LightManager():
         light_vec=Vec3(self.shadow_caster.getPos(render)/400.0)
         #light_vec.normalize() #???
         render.set_shader_input('shadow_caster',self.shadow_caster)
-        render.set_shader_input('shadow_blur',shadow_blur)
+        #render.set_shader_input('shadow_blur',shadow_blur) #set by the preprocessor
         render.setShaderInput('light_vec', light_vec)
         render.setShaderInput('light_vec_color', color)
 

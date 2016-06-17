@@ -86,9 +86,12 @@ class World(DirectObject):
     def onLinkObject(self, visible_node, bullet_node_id):
         node=self.world_node.find('**/='+str(bullet_node_id))
         if node:
+            mass=node.node().getMass()
+            node.node().setMass(0)
             node.setPos(render, visible_node.getPos(render))
             node.setHpr(render, visible_node.getHpr(render))
             visible_node.wrtReparentTo(node)
+            node.node().setMass(mass)
         else:
             log.warning(str(bullet_node_id)+' not found')
 

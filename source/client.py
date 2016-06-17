@@ -23,7 +23,8 @@ class Client(DirectObject):
         wp=self.loadWindoProperites()
         #open the window
         base.openMainWindow(props = wp)
-        base.setBackgroundColor(0.06, 0.1, 0.12, 1)
+        #base.setBackgroundColor(0.06, 0.1, 0.12, 1)
+        base.setBackgroundColor(0.0, 0.0, 0.0, 1)
         base.disableMouse()
         base.enableParticles()
 
@@ -35,10 +36,6 @@ class Client(DirectObject):
 
         #filter manager, post process
         self.filters=Filters()
-        if cfg['use-filters']:
-            self.filters.setupFilters()
-        elif cfg['use-fxaa']:
-            self.filters.setupFxaa()
 
         #audio sound effects (sfx) + music
         self.audio=Audio()
@@ -166,6 +163,7 @@ class Client(DirectObject):
             f_shader=shader.getFilename(Shader.ST_fragment)
             mesh.setShader(Shader.load(Shader.SLGLSL, v_shader,f_shader))
         self.ui.main_menu.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+        self.filters.reset()
 
     def onLoadingDone(self, target):
         log.debug(str(target)+' loading done')

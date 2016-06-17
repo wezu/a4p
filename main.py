@@ -212,6 +212,10 @@ class Configer (DirectObject):
                         if key.startswith('glsl-'):
                             if value == 0:
                                 out_file.write('#define DISABLE_'+key[5:].replace('-','_').upper()+' \n')
+                            elif value == 1:
+                                out_file.write('#define ENABLE_'+key[5:].replace('-','_').upper()+' \n')
+                            else:
+                                out_file.write('#define '+key[5:].replace('-','_').upper()+' '+str(value)+' \n')
                 if self.send_events:
                     messenger.send('reload-shaders')
             except IOError:

@@ -1,17 +1,15 @@
 //GLSL
 #version 140
 #pragma include "inc_config.glsl"
-uniform vec2 screen_size;
-uniform sampler2D tex;
+
+uniform sampler2D p3d_Texture0;
 
 in vec4 v_color;
-flat in vec2 center;
-flat in float point_size;
+in vec2 uv;
 
 void main()
     {
-    vec2 uv = (gl_FragCoord.xy / screen_size - center) / (point_size / screen_size) + 0.5;
-    vec4 final_color=texture(tex, uv)*v_color;
+    vec4 final_color=texture(p3d_Texture0, uv)*v_color;
     //final_color=v_color;
     vec4 final_aux=vec4(0.0, 0.0, 0.0, final_color.a);
 

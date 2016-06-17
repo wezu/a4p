@@ -14,9 +14,6 @@ class PCDroid():
         self.model.reparentTo(self.node)
         self.model.hide()
 
-        self.mouse_speed=cfg['mouse-speed']
-        self.mouse_lag=cfg['mouse-lag']
-
         # Task
         #taskMgr.add(self.update, 'pc_droid_update')
 
@@ -53,18 +50,18 @@ class PCDroid():
 
     #functions
     def _rotateCamH(self, t):
-        self.camera_node.setH(self.camera_node.getH()- t*self.mouse_speed)
+        self.camera_node.setH(self.camera_node.getH()- t*cfg['mouse-speed'])
 
     def _rotateCamP(self, t):
-        self.camera_gimbal.setP(self.camera_gimbal.getP()+ t*self.mouse_speed)
+        self.camera_gimbal.setP(self.camera_gimbal.getP()+ t*cfg['mouse-speed'])
         if self.camera_gimbal.getP()<-60.0:
             self.camera_gimbal.setP(-60.0)
         if self.camera_gimbal.getP()>30.0:
             self.camera_gimbal.setP(30.0)
 
     def rotate_control(self, h, p, dt):
-        LerpFunc(self._rotateCamH,fromData=0,toData=h, duration=self.mouse_lag+(dt*10.0), blendType='easeInOut').start()
-        LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=self.mouse_lag+(dt*10.0), blendType='easeInOut').start()
+        LerpFunc(self._rotateCamH,fromData=0,toData=h, duration=cfg['mouse-lag']+(dt*10.0), blendType='easeInOut').start()
+        LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=cfg['mouse-lag']+(dt*10.0), blendType='easeInOut').start()
 
     def lockCamera(self, offset=(0, -6, 1.2)):
         self.camera_node.setPos(render, self.node.getPos(render))

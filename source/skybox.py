@@ -73,7 +73,7 @@ class Skybox():
         p=min(60.0, max(-60.0,p))
 
 
-        self.lights.directionalLight(Vec3(0,p,0), self.sun_color, cfg['glsl-shadow-size'], cfg['glsl-shadow-blur'])
+        self.lights.directionalLight(Vec3(0,p,0), self.sun_color, cfg['glsl-shadow-size'])
 
         render.setShaderInput("sunColor",self.sun_color)
         render.setShaderInput("skyColor",self.sky_color)

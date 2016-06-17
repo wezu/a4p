@@ -14,7 +14,6 @@ uniform vec4 skyColor;
 uniform vec4 cloudColor;
 uniform vec4 fog;
 
-out vec4 final_color;
 
 void main()
     {
@@ -35,7 +34,7 @@ void main()
     out_color=mix(fog, out_color, blend2);
     sun=mix(0.0, sun, blend2);
     out_color.a=1.0;
-    final_color=out_color;
-    //gl_FragData[1]=vec4(0.0, 1.0,pow(sun*0.9, 5.0),0.5);
+    gl_FragData[0]=out_color;
+    gl_FragData[1]=vec4(mix(1.0,0.0,blend), pow(sun*0.8, 5.0), 0.0,1.0);
     }
 

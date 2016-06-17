@@ -3,8 +3,10 @@ font-default font/DejaVuSansMono.ttf
 font-special font/control-freak.ttf
 fullscreen False
 game-mode normal
-glsl-shadow-blur 0.5
-glsl-shadow-size 1024
+glsl-aux-output 1
+glsl-lut 1
+glsl-shadow-blur 0.4
+glsl-shadow-size 2048
 key-back s
 key-fire mouse1
 key-forward w
@@ -18,8 +20,9 @@ key-right d
 key-sprint lshift
 key-zoom mouse3
 log-file None
+lut-tex lut1.png
 mouse-lag 0.0
-mouse-scroll-speed 0.01
+mouse-scroll-speed 0.02
 mouse-speed 10.0
 music-volume 0.5
 notify-level-a4p debug
@@ -37,8 +40,8 @@ ui_color1 0.33 0.894 1.0 1.0
 ui_color2 0.94 0.0 0.1 1.0
 ui_color3 0.33 0.56 1.0 1.0
 undecorated False
-use-filters None
-use-fxaa True
+use-filters 1
+use-fxaa 1
 use-os-cursor False
 want-pstats False
 win-fixed-size False

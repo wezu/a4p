@@ -153,8 +153,8 @@ class MainMenu(DirectObject):
         self.elements['options_res']=self.makeSmallButton('Resolution', 0, self.showResSelect, 'fixed_scroll_canvas')
         self.elements['options_audio']=self.makeSmallButton('Audio', 64, self.showVolumeSelece, 'fixed_scroll_canvas')
         self.elements['options_shadows']=self.makeSmallButton('Shadows', 64*2, self.showShadowsSetup, 'fixed_scroll_canvas')
-        self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*3, self.showOptionMenu, 'fixed_scroll_canvas')
-        self.elements['options_mouse']=self.makeSmallButton('Mouse speed', 64*4, self.showOptionMenu, 'fixed_scroll_canvas')
+        self.elements['options_filters']=self.makeSmallButton('Special Effects', 64*3, self.showVfxSetup, 'fixed_scroll_canvas')
+        self.elements['options_mouse']=self.makeSmallButton('Mouse speed', 64*4, self.showMouseSetup, 'fixed_scroll_canvas')
         self.elements['options_key_forward']=self.makeSmallButton('KEY: forward', 64*5, self.showKeyBind, 'fixed_scroll_canvas', arg='forward')
         self.elements['options_key_back']=self.makeSmallButton('KEY: back', 64*6, self.showKeyBind, 'fixed_scroll_canvas', arg='back')
         self.elements['options_key_left']=self.makeSmallButton('KEY: left', 64*7, self.showKeyBind, 'fixed_scroll_canvas', arg='left')
@@ -328,6 +328,82 @@ class MainMenu(DirectObject):
         self.elements['shadow_blur_entry'].guiItem.setBlinkRate(2.0)
         self.elements['shadow_blur_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['shadow_blur_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['shadow_blur_entry']])
+        #mouse settings
+        self.elements['mouse_text']=self.makeTxt('Turn Speed:\n\nMouse Lag:\n\nScroll Speed:', self.elements['tooltip_frame'], (128,-70))
+        self.elements['mouse_text'].setPos(128, -36)
+        self.elements['mouse_speed_entry']=DirectEntry(text = "1024",
+                                            initialText="1024",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,32),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui/entry_thin.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,12),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'mouse_speed_entry', 'mouse-speed'],
+                                            focusOutExtraArgs=[None, 'mouse_speed_entry', 'mouse-speed'],
+                                            extraArgs=['mouse_speed_entry', 'mouse-speed'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['mouse_speed_entry'].setPos(270, 0, -68)
+        self.elements['mouse_speed_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['mouse_speed_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['mouse_speed_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['mouse_speed_entry']])
+        self.elements['mouse_lag_entry']=DirectEntry(text = "0.5",
+                                            initialText="0.5",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,32),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui/entry_thin.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,12),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'mouse_lag_entry', 'mouse-lag'],
+                                            focusOutExtraArgs=[None, 'mouse_lag_entry', 'mouse-lag'],
+                                            extraArgs=['mouse_lag_entry', 'mouse-lag'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['mouse_lag_entry'].setPos(270, 0, -107)
+        self.elements['mouse_lag_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['mouse_lag_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['mouse_lag_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['mouse_lag_entry']])
+        self.elements['mouse_scroll_entry']=DirectEntry(text = "0.5",
+                                            initialText="0.5",
+                                            text_font=ui.font,
+                                            frameSize=_rec2d(256,32),
+                                            frameColor=(1,1,1,1.0),
+                                            frameTexture=loadTex(path+'gui/entry_thin.png'),
+                                            text_scale=ui.font.getPixelsPerUnit(),
+                                            text_pos=(-180,12),
+                                            focus=0,
+                                            state=DGG.NORMAL,
+                                            text_fg=cfg['ui_color1'],
+                                            command=self.setConfigFromEntry,
+                                            focusInCommand=self.setConfigFromEntry,
+                                            focusOutCommand=self.setConfigFromEntry,
+                                            focusInExtraArgs=[None, 'mouse_scroll_entry', 'mouse-scroll-speed'],
+                                            focusOutExtraArgs=[None, 'mouse_scroll_entry', 'mouse-scroll-speed'],
+                                            extraArgs=['mouse_scroll_entry', 'mouse-scroll-speed'],
+                                            parent=self.elements['tooltip_frame'])
+        self.elements['mouse_scroll_entry'].setPos(270, 0, -146)
+        self.elements['mouse_scroll_entry'].guiItem.setBlinkRate(2.0)
+        self.elements['mouse_scroll_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
+        self.elements['mouse_scroll_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['mouse_scroll_entry']])
+        #effects setup
+        self.elements['vfx_text']=self.makeTxt('FXAA:\n\nAwesome VFX:\n\nColor LUT:', self.elements['tooltip_frame'], (128,-70))
+        self.elements['vfx_text'].setPos(148, -48)
+        self.elements['vfx_text'].setAlign(TextNode.ARight)
+        self.elements['vfx_fxaa_checkbox']=self.makeCheckbox(pos=(160,30), on_value=1, off_value=0, cfg_name='use-fxaa', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_effect_checkbox']=self.makeCheckbox(pos=(160,30+39), on_value=1, off_value=0, cfg_name='use-filters', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_lut_checkbox']=self.makeCheckbox(pos=(160,30+78), on_value=1, off_value=0, cfg_name='glsl-lut', parent=self.elements['tooltip_frame'])
 
         #host button
         self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
@@ -441,13 +517,44 @@ class MainMenu(DirectObject):
         entry.guiItem.setCursorPosition(new_cursor_pos)
         #print self.ui.cursor.getPos(pixel2d)
 
+    def showVfxSetup(self):
+        self.last_config_val=None
+        self.last_config_name=None
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
+        self.elements['vfx_text'].show()
+        self.elements['vfx_fxaa_checkbox'].show()
+        self.elements['vfx_effect_checkbox'].show()
+        self.elements['vfx_lut_checkbox'].show()
+        if cfg['use-fxaa']:
+            self.elements['vfx_fxaa_checkbox']['text']='X'
+        if cfg['use-filters']:
+            self.elements['vfx_effect_checkbox']['text']='X'
+        if cfg['glsl-lut']:
+            self.elements['vfx_lut_checkbox']['text']='X'
+
+    def showMouseSetup(self):
+        self.last_config_val=None
+        self.last_config_name=None
+        self.elements['mouse_speed_entry'].set(str(cfg['mouse-speed']))
+        self.elements['mouse_lag_entry'].set(str(cfg['mouse-lag']))
+        self.elements['mouse_scroll_entry'].set(str(cfg['mouse-scroll-speed']))
+        self.showElements('options_')
+        self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
+        self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
+        self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
+        self.elements['mouse_speed_entry'].show()
+        self.elements['mouse_lag_entry'].show()
+        self.elements['mouse_scroll_entry'].show()
+        self.elements['mouse_text'].show()
+
     def showShadowsSetup(self):
         self.last_config_val=None
         self.last_config_name=None
         self.elements['shadow_size_entry'].set(str(cfg['glsl-shadow-size']))
         self.elements['shadow_blur_entry'].set(str(cfg['glsl-shadow-blur']))
-        self.last_config_val=None
-        self.last_config_name=None
         self.showElements('options_')
         self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
         self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
@@ -461,8 +568,6 @@ class MainMenu(DirectObject):
         self.last_config_name=None
         self.elements['music_entry'].set(str(cfg['music-volume']))
         self.elements['sound_entry'].set(str(cfg['sound-volume']))
-        self.last_config_val=None
-        self.last_config_name=None
         self.showElements('options_')
         self.showContentFrame(line='link_line_1', bar='link_bar_1', tex='gui/bar2.png')
         self.fadeIn(self.elements['tooltip_frame'], cfg['ui_color3'])
@@ -522,12 +627,17 @@ class MainMenu(DirectObject):
         self.elements['scrolled_frame'].verticalScroll['value']=v+direction*cfg['mouse-scroll-speed']
 
     def setShader(self, v_shader, f_shader):
-        shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
+        shader = Shader.load(Shader.SLGLSL, v_shader,f_shader)
         for name, element in self.elements.items():
             if name not in ('scrolled_frame'):
-                element.setAttrib(shader_attrib)
-        self.elements['scrolled_frame'].verticalScroll.setAttrib(shader_attrib)
-        self.elements['scrolled_frame'].verticalScroll.thumb.setAttrib(shader_attrib)
+                element.setShader(shader)
+        self.elements['scrolled_frame'].verticalScroll.setShader(shader)
+        self.elements['scrolled_frame'].verticalScroll.thumb.setShader(shader)
+
+        ring_shader=Shader.load(Shader.SLGLSL, path+'shaders/ring_v.glsl',path+'shaders/ring_f.glsl')
+        for ring in self.rings:
+            ring[0].setShader(ring_shader)
+
 
     def _doDebugThing(self):
         """A function for doing some random testing stuff, do not use """
@@ -694,6 +804,56 @@ class MainMenu(DirectObject):
                 self.rings[ring_id][2].setColor(cfg['ui_color1'])
                 self.rings[ring_id][2].setForce('up', 0)
                 self.rings[ring_id][2].setForce('down', 1)
+
+    def tickCheckbox(self, checkbox, name, on_value, off_value, event=None):
+        if checkbox['text']=='X':
+            checkbox['text']=''
+            val=off_value
+        else:
+            checkbox['text']='X'
+            val=on_value
+
+        if self.last_config_name is None:
+            self.last_config_name=name
+            self.last_config_val=val
+        elif isinstance(self.last_config_name, basestring):
+            if self.last_config_name==name:
+                self.last_config_val=val
+            else:
+                self.last_config_name=[self.last_config_name]
+                self.last_config_name.append(name)
+                self.last_config_val=[self.last_config_val]
+                self.last_config_val.append(val)
+        elif name in self.last_config_name:
+            id=self.last_config_name.index(name)
+            self.last_config_val[id]=val
+        else:
+            self.last_config_name.append(name)
+            self.last_config_val.append(val)
+
+    def makeCheckbox(self, pos, on_value, off_value, cfg_name, parent):
+        font=self.ui.font
+        font_size=font.getPixelsPerUnit()
+        frame=DirectFrame(frameSize=_rec2d(32,32),
+                                    frameColor=(1,1,1,1.0),
+                                    text='',
+                                    frameTexture=loadTex(path+'gui/checkbox.png'),
+                                    text_scale=font_size,
+                                    text_font=font,
+                                    text_align=TextNode.ACenter,
+                                    text_pos=(-18,13),
+                                    text_fg=cfg['ui_color2'],
+                                    state=DGG.NORMAL,
+                                    suppressMouse=False,
+                                    parent=parent)
+        _resetPivot(frame)
+        frame.setPos(_pos2d(pos[0],pos[1]))
+        frame.setColor(cfg['ui_color1'])
+        frame.setTransparency(TransparencyAttrib.MAlpha)
+        #frame.bind(DGG.WITHOUT, self.onHoverOut,[frame, tex, ring_id])
+        #frame.bind(DGG.WITHIN, self.onHoverIn, [frame, hover_tex, ring_id])
+        frame.bind(DGG.B1PRESS, self.tickCheckbox, [frame, cfg_name, on_value, off_value])
+        return frame
 
     def makeSmallButton(self, text, offset, cmd, parent, arg=[]):
         return self.makeButton(text, (256, 64), path+'gui/button.png', path+'gui/button.png', cmd, self.elements[parent], (-262,-self.canvas_size+offset), active_area=(200, 50, 54,9), arg=arg)
