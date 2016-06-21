@@ -85,6 +85,15 @@ class Network(DirectObject):
 
 
 if __name__ == '__main__':
+
+    class NullLog():
+        def __init__(self):
+            pass
+        def  warning(self, txt):
+            pass
+        def  debug(self, txt):
+            pass
+    log=NullLog()
     from direct.showbase import ShowBase
     base = ShowBase.ShowBase()
     n=Network()

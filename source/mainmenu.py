@@ -184,7 +184,7 @@ class MainMenu(DirectObject):
         self.elements['key_bind_key_name']['fg']=cfg['ui_color2']
 
         #resolution
-        self.elements['res_text']=self.makeTxt('Width, Height:\n\n\nFullscreen:', self.elements['tooltip_frame'], (128,-70))
+        self.elements['res_text']=self.makeTxt('Width, Height:\n\n\n\nFullscreen:', self.elements['tooltip_frame'], (128,-70))
         self.elements['res_text'].setPos(128, -48)
         #DirectEntry hell...
         self.elements['res_entry']=DirectEntry(text = "800,600",
@@ -209,28 +209,7 @@ class MainMenu(DirectObject):
         self.elements['res_entry'].guiItem.setBlinkRate(2.0)
         self.elements['res_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['res_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['res_entry']])
-        self.elements['fullscreen_entry']=DirectEntry(text = "0",
-                                            initialText="0",
-                                            text_font=ui.font,
-                                            frameSize=_rec2d(256,64),
-                                            frameColor=(1,1,1,1.0),
-                                            frameTexture=loadTex(path+'gui/entry.png'),
-                                            text_scale=ui.font.getPixelsPerUnit(),
-                                            text_pos=(-180,30),
-                                            focus=0,
-                                            state=DGG.NORMAL,
-                                            text_fg=cfg['ui_color1'],
-                                            command=self.setConfigFromEntry,
-                                            focusInCommand=self.setConfigFromEntry,
-                                            focusOutCommand=self.setConfigFromEntry,
-                                            focusInExtraArgs=[None, 'fullscreen_entry', 'fullscreen'],
-                                            focusOutExtraArgs=[None, 'fullscreen_entry', 'fullscreen'],
-                                            extraArgs=['fullscreen_entry', 'fullscreen'],
-                                            parent=self.elements['tooltip_frame'])
-        self.elements['fullscreen_entry'].setPos(270, 0, -166)
-        self.elements['fullscreen_entry'].guiItem.setBlinkRate(2.0)
-        self.elements['fullscreen_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
-        self.elements['fullscreen_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['fullscreen_entry']])
+        self.elements['fullscreen_checkbox']=self.makeCheckbox(pos=(112,130), on_value=1, off_value=0, cfg_name='fullscreen', parent=self.elements['tooltip_frame'])
 
         #audio (sound and music volume)
         self.elements['audio_text']=self.makeTxt('Music Volume:\n\n\nSound Volume:', self.elements['tooltip_frame'], (128,-70))
@@ -398,12 +377,22 @@ class MainMenu(DirectObject):
         self.elements['mouse_scroll_entry'].guiItem.getCursorDef().setColor(cfg['ui_color1'], 1)
         self.elements['mouse_scroll_entry'].bind(DGG.B1PRESS, self.setEntryCursorPos, [self.elements['mouse_scroll_entry']])
         #effects setup
-        self.elements['vfx_text']=self.makeTxt('FXAA:\n\nAwesome VFX:\n\nColor LUT:', self.elements['tooltip_frame'], (128,-70))
-        self.elements['vfx_text'].setPos(148, -48)
+        txt='''FXAA:     Blur:
+
+        Flare:    Glare:
+
+        Color Correction:
+
+        Distortion:'''
+        self.elements['vfx_text']=self.makeTxt(txt, self.elements['tooltip_frame'], (128,-70))
+        self.elements['vfx_text'].setPos(188, -48)
         self.elements['vfx_text'].setAlign(TextNode.ARight)
-        self.elements['vfx_fxaa_checkbox']=self.makeCheckbox(pos=(160,30), on_value=1, off_value=0, cfg_name='use-fxaa', parent=self.elements['tooltip_frame'])
-        self.elements['vfx_effect_checkbox']=self.makeCheckbox(pos=(160,30+39), on_value=1, off_value=0, cfg_name='use-filters', parent=self.elements['tooltip_frame'])
-        self.elements['vfx_lut_checkbox']=self.makeCheckbox(pos=(160,30+78), on_value=1, off_value=0, cfg_name='glsl-lut', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_fxaa_checkbox']=self.makeCheckbox(pos=(92,30), on_value=1, off_value=0, cfg_name='use-fxaa', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_blur_checkbox']=self.makeCheckbox(pos=(188,30), on_value=1, off_value=0, cfg_name='glsl-blur', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_glare_checkbox']=self.makeCheckbox(pos=(188,30+39), on_value=1, off_value=0, cfg_name='glsl-glare', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_flare_checkbox']=self.makeCheckbox(pos=(92,30+39), on_value=1, off_value=0, cfg_name='glsl-flare', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_lut_checkbox']=self.makeCheckbox(pos=(188,30+78), on_value=1, off_value=0, cfg_name='glsl-lut', parent=self.elements['tooltip_frame'])
+        self.elements['vfx_dist_checkbox']=self.makeCheckbox(pos=(188,30+117), on_value=1, off_value=0, cfg_name='glsl-distortion', parent=self.elements['tooltip_frame'])
 
         #host button
         self.elements['host_start']=self.makeButton('HOST', (256, 128), path+'gui/button3.png', path+'gui/button3.png', self.startGame, self.elements['tooltip_frame'], (0,128), active_area=(212, 70, 12, 47))
@@ -493,7 +482,7 @@ class MainMenu(DirectObject):
         if self.last_config_name is None:
             self.last_config_name=name
             self.last_config_val=val
-        elif isinstance(self.last_config_name, basestring):
+        elif isinstance(self.last_config_name, str):
             if self.last_config_name==name:
                 self.last_config_val=val
             else:
@@ -526,14 +515,23 @@ class MainMenu(DirectObject):
         self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
         self.elements['vfx_text'].show()
         self.elements['vfx_fxaa_checkbox'].show()
-        self.elements['vfx_effect_checkbox'].show()
+        self.elements['vfx_glare_checkbox'].show()
+        self.elements['vfx_flare_checkbox'].show()
+        self.elements['vfx_blur_checkbox'].show()
         self.elements['vfx_lut_checkbox'].show()
+        self.elements['vfx_dist_checkbox'].show()
         if cfg['use-fxaa']:
             self.elements['vfx_fxaa_checkbox']['text']='X'
-        if cfg['use-filters']:
-            self.elements['vfx_effect_checkbox']['text']='X'
+        if cfg['glsl-glare']:
+            self.elements['vfx_glare_checkbox']['text']='X'
+        if cfg['glsl-flare']:
+            self.elements['vfx_flare_checkbox']['text']='X'
+        if cfg['glsl-blur']:
+            self.elements['vfx_blur_checkbox']['text']='X'
         if cfg['glsl-lut']:
             self.elements['vfx_lut_checkbox']['text']='X'
+        if cfg['glsl-distortion']:
+            self.elements['vfx_dist_checkbox']['text']='X'
 
     def showMouseSetup(self):
         self.last_config_val=None
@@ -586,16 +584,19 @@ class MainMenu(DirectObject):
         self.elements['res_text'].show()
         self.fadeIn(self.elements['save_cfg'], cfg['ui_color1'])
         self.elements['res_entry'].show()
-        self.elements['fullscreen_entry'].show()
+        self.elements['fullscreen_checkbox'].show()
+        if cfg['fullscreen']:
+            self.elements['fullscreen_checkbox']['text']='X'
 
     def saveConfig(self):
         self.setConfigFromEntry(None,self.last_focused_entry,self.last_entry_config_name)
         if self.last_config_val is not None:
-            if isinstance(self.last_config_name, basestring):
+            if isinstance(self.last_config_name, str):
                 cfg[self.last_config_name]=self.last_config_val
             else:
                 for name, value in zip(self.last_config_name, self.last_config_val):
                     cfg[name]=value
+
             cfg.saveConfig(path+'config.txt', path+'shaders/inc_config.glsl')
 
         self.elements['tooltip_frame'].hide()
@@ -805,7 +806,7 @@ class MainMenu(DirectObject):
                 self.rings[ring_id][2].setForce('up', 0)
                 self.rings[ring_id][2].setForce('down', 1)
 
-    def tickCheckbox(self, checkbox, name, on_value, off_value, event=None):
+    def tickCheckbox(self, checkbox, names, on_value, off_value, event=None):
         if checkbox['text']=='X':
             checkbox['text']=''
             val=off_value
@@ -813,23 +814,26 @@ class MainMenu(DirectObject):
             checkbox['text']='X'
             val=on_value
 
-        if self.last_config_name is None:
-            self.last_config_name=name
-            self.last_config_val=val
-        elif isinstance(self.last_config_name, basestring):
-            if self.last_config_name==name:
+        if isinstance(names, str):
+            names=[names]
+        for name in names:
+            if self.last_config_name is None:
+                self.last_config_name=name
                 self.last_config_val=val
+            elif isinstance(self.last_config_name, str):
+                if self.last_config_name==name:
+                    self.last_config_val=val
+                else:
+                    self.last_config_name=[self.last_config_name]
+                    self.last_config_name.append(name)
+                    self.last_config_val=[self.last_config_val]
+                    self.last_config_val.append(val)
+            elif name in self.last_config_name:
+                id=self.last_config_name.index(name)
+                self.last_config_val[id]=val
             else:
-                self.last_config_name=[self.last_config_name]
                 self.last_config_name.append(name)
-                self.last_config_val=[self.last_config_val]
                 self.last_config_val.append(val)
-        elif name in self.last_config_name:
-            id=self.last_config_name.index(name)
-            self.last_config_val[id]=val
-        else:
-            self.last_config_name.append(name)
-            self.last_config_val.append(val)
 
     def makeCheckbox(self, pos, on_value, off_value, cfg_name, parent):
         font=self.ui.font

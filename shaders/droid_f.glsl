@@ -157,9 +157,13 @@ void main()
     //shadows
     #ifndef DISABLE_SHADOW_SIZE
         #ifndef SHADOW_BLUR
-        color*= textureProj(shadow_caster.shadowMap,vec4(shadow_uv.xy, shadow_uv.z-0.0001, shadow_uv.w));
+        float shadow=textureProj(shadow_caster.shadowMap,vec4(shadow_uv.xy, shadow_uv.z-0.0001, shadow_uv.w));
+        color*= shadow;
+        specular*=shadow;
         #else
-        color*=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, SHADOW_BLUR);
+        float shadow=textureProjSoft(shadow_caster.shadowMap, shadow_uv, 0.0001, SHADOW_BLUR);
+        color*= shadow;
+        specular*=shadow;
         #endif
     #endif
 
@@ -177,7 +181,10 @@ void main()
     fog_factor=clamp((fog_factor*0.003)-0.1, 0.0, 1.0);
     //final color with fog
     vec4 final_color=vec4(mix(color*color_map.rgb, fog.rgb, fog_factor), color_map.a);
-    vec4 final_aux=vec4(blur_factor, specular, 0.0,final_color.a);
     gl_FragData[0]=final_color;
+
+    #if defined(ENABLE_BLUR) || defined(ENABLE_GLARE)|| defined(ENABLE_FLARE)|| defined(ENABLE_DISTORTION)
+    vec4 final_aux=vec4(blur_factor, specular, 0.0,final_color.a);
     gl_FragData[1]=final_aux;
+    #endif
     }

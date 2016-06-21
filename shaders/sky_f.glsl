@@ -35,6 +35,8 @@ void main()
     sun=mix(0.0, sun, blend2);
     out_color.a=1.0;
     gl_FragData[0]=out_color;
+    #if defined(ENABLE_BLUR) || defined(ENABLE_GLARE)|| defined(ENABLE_FLARE)|| defined(ENABLE_DISTORTION)
     gl_FragData[1]=vec4(mix(1.0,0.0,blend), pow(sun*0.8, 5.0), 0.0,1.0);
+    #endif
     }
 

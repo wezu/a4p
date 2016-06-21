@@ -54,7 +54,7 @@ out vec4 shadow_uv;
 #endif
 
 out vec2 uv;
-out vec4 world_pos;;
+out vec4 world_pos;
 out vec3 normal;
 
 void main()
