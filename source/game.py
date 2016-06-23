@@ -3,7 +3,7 @@ from direct.showbase.DirectObject import DirectObject
 
 from client import Client
 from server import Server
-from network import Network
+#from network import Network
 from masterserver import Masterserver
 from world import World
 

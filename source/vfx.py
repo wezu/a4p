@@ -158,7 +158,7 @@ class ParticleVfx():
 
         for geom in self.node.findAllMatches('**/+GeomNode'):
             geom.setAttrib(shader_attrib)
-            for name, value in inputs.iteritems():
+            for name, value in inputs.items():
                 geom.setShaderInput(name, value)
 
     def addForce(self, force, name):

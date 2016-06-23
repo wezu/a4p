@@ -133,7 +133,7 @@ class Audio(DirectObject):
 
     def setMusic(self, music):
         music_list=[]
-        if isinstance(music, basestring):
+        if isinstance(music, str):
             music_list.append(self.music[music])
         else:
             for track in music:

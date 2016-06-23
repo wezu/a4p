@@ -68,5 +68,5 @@ class PCDroid():
         base.cam.setHpr(render, 0,0,0)
         base.cam.setPos(base.cam, offset)
         base.cam.wrtReparentTo(self.camera_gimbal)
-        base.win.movePointer(0, base.win.getXSize()/2, base.win.getYSize()/2)
+        base.win.movePointer(0, base.win.getXSize()//2, base.win.getYSize()//2)
         taskMgr.add(self.update, 'pc_droid_update')

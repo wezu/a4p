@@ -734,7 +734,7 @@ class MainMenu(DirectObject):
         self.elements['res_entry'].set(str(window_x)+', '+str(window_y))
 
     def hide(self):
-        for element in self.elements.itervalues():
+        for element in self.elements.values():
             element.hide()
         for ring in self.rings:
             ring[0].hide()
