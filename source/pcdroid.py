@@ -21,31 +21,30 @@ class PCDroid():
     def update(self, task):
         self.camera_node.setPos(render, self.node.getPos(render))
         dt = globalClock.getDt()
+        if base.mouseWatcherNode.hasMouse() and self.ui.in_game_menu.is_menu_hidden:
 
-        half_x=base.win.getXSize()//2
-        half_y=base.win.getYSize()//2
-        delta_x=half_x-base.win.getPointer(0).getX()
-        delta_y=half_y-base.win.getPointer(0).getY()
+            half_x=base.win.getXSize()//2
+            half_y=base.win.getYSize()//2
+            delta_x=half_x-base.win.getPointer(0).getX()
+            delta_y=half_y-base.win.getPointer(0).getY()
 
-        self.rotate_control(-delta_x*0.01, delta_y*0.01, dt)
-        base.win.movePointer(0, half_x, half_y)
+            self.rotate_control(-delta_x*0.01, delta_y*0.01, dt)
+            base.win.movePointer(0, half_x, half_y)
 
-        force= Vec3(0,0,0)
-        if self.ui.key_map['forward']:
-            force.setY(1.0)
-        if self.ui.key_map['back']:
-            force.setY(-1.0)
-        if self.ui.key_map['left']:
-            force.setX(-1.0)
-        if self.ui.key_map['right']:
-            force.setX(1.0)
-        force.normalize()
-        force=force*50.0
-        force = render.getRelativeVector(self.camera_node, force)
-        if force.lengthSquared() != 0.0:
-            messenger.send('world-player-pod-force',[force])
-
-
+            force= Vec3(0,0,0)
+            if self.ui.key_map['forward']:
+                force.setY(1.0)
+            if self.ui.key_map['back']:
+                force.setY(-1.0)
+            if self.ui.key_map['left']:
+                force.setX(-1.0)
+            if self.ui.key_map['right']:
+                force.setX(1.0)
+            force.normalize()
+            force=force*50.0
+            force = render.getRelativeVector(self.camera_node, force)
+            if force.lengthSquared() != 0.0:
+                messenger.send('world-player-pod-force',[force])
         return task.cont
 
     #functions

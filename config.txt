@@ -8,7 +8,7 @@ glsl-blur 1
 glsl-distortion 0
 glsl-flare 1
 glsl-glare 1
-glsl-lut 0
+glsl-lut 1
 glsl-shadow-blur 0.4
 glsl-shadow-size 2048
 key-back s

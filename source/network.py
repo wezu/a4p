@@ -27,13 +27,10 @@ class Network(DirectObject):
         self.reading_socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.reading_socket.bind(('',SERVER_PORT))
         self.reading_socket.setblocking(0)
+
         self.writing_socket=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         #event handling
-
-        self.accept('1', self.sendToAll, ['key press 1'])
-        self.accept('2', self.sendToAll, ['key press 2'])
-        self.accept('3', self.sendToAll, ['key press 3'])
 
         # Task
         taskMgr.add(self.listen, 'network_listen')

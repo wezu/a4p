@@ -102,6 +102,9 @@ class UserInterface(DirectObject):
     def hideSoftCursor(self):
         self.cursor['frameTexture']=loader.loadTexture(path+'gui/empty_64.png')
 
+    def showSoftCursor(self):
+        self.cursor['frameTexture']=loader.loadTexture(path+'gui/pointer1.png')
+
     def bindKeys(self):
         self.ignoreAll()
         self.accept(cfg['key-back'], self.key_map.__setitem__, ["back", True])
@@ -123,6 +126,9 @@ class UserInterface(DirectObject):
         #cfg['key-gun3']
         #cfg['key-menu']
         #cfg['key-orders']
+
+        self.accept(cfg['key-menu'], self.in_game_menu.showMenu)
+        self.accept(cfg['key-orders'], self.in_game_menu.showOrders)
 
 
 

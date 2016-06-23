@@ -5,4 +5,4 @@
 #define ENABLE_FLARE 
 #define SHADOW_BLUR 0.4 
 #define SHADOW_SIZE 2048 
-#define DISABLE_LUT 
+#define ENABLE_LUT 

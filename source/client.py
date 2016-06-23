@@ -176,7 +176,7 @@ class Client(DirectObject):
             self.droid.node.setPos(20,0,2)
             self.droid.lockCamera()
             self.droid.model.show()
-            self.ui.in_game_menu.showCrosshair()
+            self.ui.in_game_menu.showElements('hud_')
             self.ui.hideSoftCursor()
             messenger.send('world-link-objects', [self.droid.node, 'pc_droid_node'])
 
