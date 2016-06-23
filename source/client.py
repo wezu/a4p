@@ -135,7 +135,7 @@ class Client(DirectObject):
             mesh.reparentTo(self.level_root)
             mesh.setPosHpr(tuple(obj['pos']), tuple(obj['hpr']))
             mesh.setTag('id_'+str(id), str(id)) #we may need to find this mesh later to link it to a Bullet object
-            for name, value in obj['shader_inputs'].iteritems():
+            for name, value in obj['shader_inputs'].items():
                 if isinstance(value, basestring):
                     mesh.setShaderInput(str(name), loader.loadTexture(path+value))
                 if isinstance(value, float):

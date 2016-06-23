@@ -1,6 +1,7 @@
 import sys
 if sys.version_info.major >2:
     import builtins
+    builtins.basestring = str
 else:
     import __builtin__ as builtins
 from direct.showbase.AppRunnerGlobal import appRunner
