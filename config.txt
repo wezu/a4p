@@ -1,4 +1,5 @@
 #A4P config file, edit at your own risk
+flare-tex star1.png
 font-default font/DejaVuSansMono.ttf
 font-special font/control-freak.ttf
 fullscreen False
@@ -23,7 +24,7 @@ key-right d
 key-sprint lshift
 key-zoom mouse3
 log-file None
-lut-tex lut3.png
+lut-tex lut_16.png
 mouse-lag 0.0
 mouse-scroll-speed 0.02
 mouse-speed 10.0

@@ -47,7 +47,7 @@ uniform int num_lights;
 uniform vec3 camera_pos;
 uniform vec3 ambient;
 uniform vec3 light_vec;
-uniform vec3 light_vec_color;
+uniform vec4 light_vec_color;
 uniform vec4 fog;
 
 
@@ -126,8 +126,8 @@ void main()
 
     //lights...
     //...directional
-    color+=light_vec_color*max(dot(N,light_vec), 0.0);
-    specular +=pow(max(dot(reflect(light_vec,N), V), 0.0), 100.0)*gloss;
+    color+=light_vec_color.rgb*max(dot(N,light_vec), 0.0);
+    specular +=pow(max(dot(reflect(light_vec,N), V), 0.0), 100.0)*gloss*light_vec_color.a;
     //..point
     vec3 L;
     vec3 R;

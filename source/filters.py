@@ -113,7 +113,7 @@ class Filters():
                 interquad4.setShaderInput('glareTex', glareTex)
             if cfg['glsl-flare']:
                 interquad4.setShaderInput('flareTex', flareTex2)
-                star_tex=loader.loadTexture(path+'data/star.png')
+                star_tex=loader.loadTexture(path+'data/'+cfg['flare-tex'])
                 star_tex.setWrapU(Texture.WM_mirror_once)
                 star_tex.setWrapV(Texture.WM_mirror_once)
                 interquad4.setShaderInput('starTex', star_tex)

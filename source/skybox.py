@@ -79,3 +79,5 @@ class Skybox():
         render.setShaderInput("skyColor",self.sky_color)
         render.setShaderInput("cloudColor",self.cloud_color)
         render.setShaderInput("fog", self.fog_color)
+
+

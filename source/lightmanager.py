@@ -32,6 +32,8 @@ class LightManager():
         render.set_shader_input('shadow_caster',self.shadow_caster)
         #render.set_shader_input('shadow_blur',shadow_blur) #set by the preprocessor
         render.setShaderInput('light_vec', light_vec)
+        specular=(color[0]+color[1]+color[2])/3.0
+        color=Vec4(color[0], color[1], color[2],specular)
         render.setShaderInput('light_vec_color', color)
 
     def ambientLight(self, *args):
