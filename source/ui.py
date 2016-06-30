@@ -78,7 +78,9 @@ class UserInterface(DirectObject):
                     'left':False,
                     'right':False,
                     'sprint':False}
-
+        #vars
+        self.is_zoomed=False
+        self.is_main_menu=True
 
         # Task
         taskMgr.add(self.update, 'ui_update')
@@ -120,7 +122,7 @@ class UserInterface(DirectObject):
         self.accept(cfg['key-right']+'-up', self.key_map.__setitem__, ["right", False])
         self.accept(cfg['key-sprint']+'-up', self.key_map.__setitem__, ["sprint", False])
 
-        #cfg['key-zoom']
+        self.accept(cfg['key-zoom'], self.zoom)
         #cfg['key-gun1']
         #cfg['key-gun2']
         #cfg['key-gun3']
@@ -130,7 +132,14 @@ class UserInterface(DirectObject):
         self.accept(cfg['key-menu'], self.in_game_menu.showMenu)
         self.accept(cfg['key-orders'], self.in_game_menu.showOrders)
 
-
+    def zoom(self):
+        fov=base.camLens.getFov()
+        if self.is_zoomed:
+            base.camLens.setFov(fov*2.0)
+            self.is_zoomed=False
+        else:
+            base.camLens.setFov(fov*0.5)
+            self.is_zoomed=True
 
     def updateGuiNodes(self):
         winX = base.win.getXSize()

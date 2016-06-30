@@ -81,7 +81,15 @@ class InGameMenu(DirectObject):
             else:
                 frame.hide()
 
-    def showMenu(self):
+    def showMenu(self, window_focus=None):
+        if window_focus is not None:
+            if window_focus == False and not self.ui.is_main_menu:
+                if self.is_menu_hidden:
+                    self.is_menu_hidden=False
+                    self.hideCrosshair()
+                    self.ui.showSoftCursor()
+                    log.debug("showing menu")
+            return
         if self.is_menu_hidden:
             self.is_menu_hidden=False
             self.hideCrosshair()

@@ -178,6 +178,7 @@ class Client(DirectObject):
             self.droid.model.show()
             self.ui.in_game_menu.showElements('hud_')
             self.ui.hideSoftCursor()
+            self.ui.is_main_menu=False
             messenger.send('world-link-objects', [self.droid.node, 'pc_droid_node'])
 
     def onLevelLoad(self, map_name):
@@ -209,6 +210,7 @@ class Client(DirectObject):
     def onWindowFocus(self):
         self.window_focused=base.win.getProperties().getForeground()
         log.debug('window-event: Focus set to '+str(self.window_focused))
+        self.ui.in_game_menu.showMenu(self.window_focused)
         if not self.window_focused:
             self.ui.cursor_pos=(0,0,0)
         if cfg['pause-on-focus-lost']:

@@ -502,7 +502,7 @@ class MainMenu(DirectObject):
         #print event.getMouse()
         m=event.getMouse()
         pixel_pos=entry.getRelativePoint(render2d, Point3(m[0], 0, m[1]))
-        new_cursor_pos= max(0, min(int(pixel_pos[0])+189, 125))/11
+        new_cursor_pos= max(0, min(int(pixel_pos[0])+189, 125))//11
         entry.guiItem.setCursorPosition(new_cursor_pos)
         #print self.ui.cursor.getPos(pixel2d)
 
