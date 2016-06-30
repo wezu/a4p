@@ -107,22 +107,31 @@ class UserInterface(DirectObject):
     def showSoftCursor(self):
         self.cursor['frameTexture']=loader.loadTexture(path+'gui/pointer1.png')
 
+    def getMappedKey(self, key):
+        mapped_keyname=str(base.win.getKeyboardMap().getMappedButton(key))
+        if mapped_keyname=="none":
+            mapped_keyname=key
+        if key == mapped_keyname:
+            return key
+        else:
+            return mapped_keyname
+
     def bindKeys(self):
         self.ignoreAll()
-        self.accept(cfg['key-back'], self.key_map.__setitem__, ["back", True])
-        self.accept(cfg['key-fire'], self.key_map.__setitem__, ["fire", True])
-        self.accept(cfg['key-forward'], self.key_map.__setitem__, ["forward", True])
-        self.accept(cfg['key-left'], self.key_map.__setitem__, ["left", True])
-        self.accept(cfg['key-right'], self.key_map.__setitem__, ["right", True])
-        self.accept(cfg['key-sprint'], self.key_map.__setitem__, ["sprint", True])
-        self.accept(cfg['key-back']+'-up', self.key_map.__setitem__, ["back", False])
-        self.accept(cfg['key-fire']+'-up', self.key_map.__setitem__, ["fire", False])
-        self.accept(cfg['key-forward']+'-up', self.key_map.__setitem__, ["forward", False])
-        self.accept(cfg['key-left']+'-up', self.key_map.__setitem__, ["left", False])
-        self.accept(cfg['key-right']+'-up', self.key_map.__setitem__, ["right", False])
-        self.accept(cfg['key-sprint']+'-up', self.key_map.__setitem__, ["sprint", False])
+        self.accept(self.getMappedKey(cfg['key-back']), self.key_map.__setitem__, ["back", True])
+        self.accept(self.getMappedKey(cfg['key-fire']), self.key_map.__setitem__, ["fire", True])
+        self.accept(self.getMappedKey(cfg['key-forward']), self.key_map.__setitem__, ["forward", True])
+        self.accept(self.getMappedKey(cfg['key-left']), self.key_map.__setitem__, ["left", True])
+        self.accept(self.getMappedKey(cfg['key-right']), self.key_map.__setitem__, ["right", True])
+        self.accept(self.getMappedKey(cfg['key-sprint']), self.key_map.__setitem__, ["sprint", True])
+        self.accept(self.getMappedKey(cfg['key-back']+'-up'), self.key_map.__setitem__, ["back", False])
+        self.accept(self.getMappedKey(cfg['key-fire']+'-up'), self.key_map.__setitem__, ["fire", False])
+        self.accept(self.getMappedKey(cfg['key-forward']+'-up'), self.key_map.__setitem__, ["forward", False])
+        self.accept(self.getMappedKey(cfg['key-left']+'-up'), self.key_map.__setitem__, ["left", False])
+        self.accept(self.getMappedKey(cfg['key-right']+'-up'), self.key_map.__setitem__, ["right", False])
+        self.accept(self.getMappedKey(cfg['key-sprint']+'-up'), self.key_map.__setitem__, ["sprint", False])
 
-        self.accept(cfg['key-zoom'], self.zoom)
+        self.accept(self.getMappedKey(cfg['key-zoom']), self.zoom)
         #cfg['key-gun1']
         #cfg['key-gun2']
         #cfg['key-gun3']

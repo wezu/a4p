@@ -606,8 +606,14 @@ class MainMenu(DirectObject):
 
     def getKey(self, keyname):
         keyname=str(keyname)
-        self.last_config_val=keyname
-        self.elements['key_bind_key_name']['text']=keyname
+        mapped_keyname=str(base.win.getKeyboardMap().getMappedButton(keyname))
+        if mapped_keyname=="none":
+            mapped_keyname=keyname
+        self.last_config_val=mapped_keyname
+        if keyname == mapped_keyname:
+            self.elements['key_bind_key_name']['text']=keyname
+        else:
+            self.elements['key_bind_key_name']['text']=keyname +'\n('+mapped_keyname+')'
 
     def showKeyBind(self, key):
         self.showElements('options_')
@@ -620,7 +626,14 @@ class MainMenu(DirectObject):
         self.elements['key_bind_text']['text']='Press key for:\n'+key.upper()+'\nCurrent key is:\n\n'
         #self.accept('button-down', self.getKey)
         Sequence(Wait(0.1), Func(self.accept, 'button-down', self.getKey)).start()
-        self.elements['key_bind_key_name']['text']=str(cfg['key-'+key])
+        keyname=str(cfg['key-'+key])
+        mapped_keyname=str(base.win.getKeyboardMap().getMappedButton(keyname))
+        if mapped_keyname=="none":
+            mapped_keyname=keyname
+        if keyname == mapped_keyname:
+            self.elements['key_bind_key_name']['text']=keyname
+        else:
+            self.elements['key_bind_key_name']['text']=keyname +'\n('+mapped_keyname+')'
 
 
     def scroll(self, direction):
