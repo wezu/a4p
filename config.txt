@@ -33,7 +33,7 @@ notify-level-a4p debug
 pause-on-focus-lost False
 sfx-distance-factor 10.0
 sfx-doppler-factor 1.0
-show-frame-rate-meter 1
+show-frame-rate-meter 0
 sound-volume 0.2
 source-dir source
 speakermode raw

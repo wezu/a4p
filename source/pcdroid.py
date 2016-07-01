@@ -10,7 +10,9 @@ class PCDroid():
 
         self.model=loader.loadModel(path+'models/droid')
         self.model.setShader(Shader.load(Shader.SLGLSL, path+'shaders/droid_v.glsl', path+'shaders/droid_f.glsl'))
-        self.model.setShaderInput("glow_color", Vec3(0.33, 0.894, 1.0))
+        #self.model.setShaderInput("glow_color", Vec3(0.33, 0.894, 1.0)) #no team
+        #self.model.setShaderInput("glow_color", Vec3(0.94, 0.0, 0.1)) #red team
+        self.model.setShaderInput("glow_color", Vec3(0.33,0.56, 1.0)) #blue team
         self.model.reparentTo(self.node)
         self.model.hide()
 

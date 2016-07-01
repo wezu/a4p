@@ -48,7 +48,7 @@ class Network(DirectObject):
         self.writing_socket.sendto(pack(msg, True), self.targets[target_id])
 
     def sendToAll(self, msg):
-        for target in self.targets.itervalues():
+        for target in self.targets.values():
             self.writing_socket.sendto(msg, target)
 
 

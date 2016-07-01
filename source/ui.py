@@ -37,6 +37,20 @@ class UserInterface(DirectObject):
         self.font_special.setMinfilter(Texture.FTNearest )
         self.font_special.setMagfilter(Texture.FTNearest )
 
+        #text properties
+        tp_red = TextProperties()
+        tp_red.setTextColor(0.94, 0.0, 0.1, 1.0)
+        tp_blue = TextProperties()
+        tp_blue.setTextColor(0.1, 0.4, 1.0, 1.0)
+        tp_cyan = TextProperties()
+        tp_cyan.setTextColor(0.33, 0.894, 1.0, 1.0)
+
+        tpMgr = TextPropertiesManager.getGlobalPtr()
+        tpMgr.setProperties("red", tp_red)
+        tpMgr.setProperties("blue", tp_blue)
+        tpMgr.setProperties("cyan", tp_cyan)
+
+
         #set nodes for gui placement
         self.top_left=pixel2d.attachNewNode('TopLeft')
         self.top_right=pixel2d.attachNewNode('TopRight')
@@ -132,14 +146,18 @@ class UserInterface(DirectObject):
         self.accept(self.getMappedKey(cfg['key-sprint']+'-up'), self.key_map.__setitem__, ["sprint", False])
 
         self.accept(self.getMappedKey(cfg['key-zoom']), self.zoom)
-        #cfg['key-gun1']
-        #cfg['key-gun2']
-        #cfg['key-gun3']
+        self.accept(self.getMappedKey(cfg['key-gun1']), self.set_gun, [1])
+        self.accept(self.getMappedKey(cfg['key-gun2']), self.set_gun, [2])
+        self.accept(self.getMappedKey(cfg['key-gun3']), self.set_gun, [3])
+
         #cfg['key-menu']
         #cfg['key-orders']
 
-        self.accept(cfg['key-menu'], self.in_game_menu.showMenu)
-        self.accept(cfg['key-orders'], self.in_game_menu.showOrders)
+        self.accept(self.getMappedKey(cfg['key-menu']), self.in_game_menu.showMenu)
+        self.accept(self.getMappedKey(cfg['key-orders']), self.in_game_menu.showOrders)
+
+    def set_gun(self, gun):
+        self.in_game_menu.set_gun(gun)
 
     def zoom(self):
         fov=base.camLens.getFov()

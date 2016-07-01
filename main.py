@@ -209,7 +209,7 @@ class Configer (DirectObject):
             try:
                 with open(glsl_config_file, 'w') as out_file:
                     out_file.write('//A4P config file, edit at your own risk\n')
-                    for key, value in self.cfg.iteritems():
+                    for key, value in self.cfg.items():
                         if key.startswith('glsl-'):
                             if value == 0:
                                 out_file.write('#define DISABLE_'+key[5:].replace('-','_').upper()+' \n')
@@ -368,7 +368,7 @@ class App():
         if len(sys.argv)>1:
             names=sys.argv[1:][::2]
             values=sys.argv[2:][::2]
-            for name, value in dict(zip(names, values)).iteritems():
+            for name, value in dict(zip(names, values)).items():
                 log.debug('cmd option: '+name+' '+value)
                 cfg.setCfgValueFromString(name, value)
                 log.debug(name+':'+str(cfg[name]))

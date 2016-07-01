@@ -47,8 +47,9 @@ class InGameMenu(DirectObject):
     def __init__(self, ui):
         self.ui=ui
         self.elements={}
-
+        #vars
         self.is_menu_hidden=True
+        self.current_gun=1
 
         #crosshair
         self.elements['hud_crosshair']=DirectFrame(frameSize=_rec2d(64,64),
@@ -66,13 +67,24 @@ class InGameMenu(DirectObject):
 
         self.elements['hud_health']=self.makeFrame('100', path+'gui/health.png', ui.bottom_left, (0,-64), (256,64), (-100, 12))
         #self.elements['hud_turbo']
-        #self.elements['hud_weapon']
-        #self.elements['hud_ammo']
-        #self.elements['hud_money']
-        #self.elements['hud_score']
+        self.elements['hud_weapon1']=self.makeFrame('15/15', path+'gui/ammo_pistol.png', ui.bottom_right, (-436+16-16,-32-16), (256,32), (-150, 11), ui.font)
+        self.elements['hud_weapon2']=self.makeFrame('30/30', path+'gui/ammo_hmg.png', ui.bottom_right, (-300-16,-32), (256,32), (-150, 11), ui.font)
+        self.elements['hud_weapon3']=self.makeFrame('5/5', path+'gui/ammo_sniper.png', ui.bottom_right, (-164-16,-32), (256,32), (-150, 11), ui.font)
+        self.elements['hud_score_my']=self.makeFrame('$:100', path+'gui/score_bar1.png', ui.top_left, (0,0), (256,64), (-128, 20), align=TextNode.ALeft)
+        self.elements['hud_score_team']=self.makeFrame('\1red\1 0\2 \1cyan\1 vs\2 \1blue\1 0\2', path+'gui/score_bar2.png', ui.top_right, (-256,0), (256,64), (-128, 20))
+        self.elements['hud_time']=self.makeFrame('10:00', path+'gui/time.png', ui.top, (-64,0), (128,64), (-64, 34),ui.font)
 
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def set_gun(self, gun):
+        if gun==self.current_gun:
+            return
+        current_gun_pos=self.elements['hud_weapon'+str(self.current_gun)].getPos()
+        gun_pos=self.elements['hud_weapon'+str(gun)].getPos()
+        LerpPosInterval(self.elements['hud_weapon'+str(self.current_gun)], 0.2, current_gun_pos-(16,0, 16)).start()
+        LerpPosInterval(self.elements['hud_weapon'+str(gun)], 0.2, gun_pos-(-16,0, -16)).start()
+        self.current_gun=gun
 
     def showElements(self, show_pattern):
         for  name, frame in self.elements.items():
@@ -133,8 +145,11 @@ class InGameMenu(DirectObject):
         for name, element in self.elements.items():
             element.setAttrib(shader_attrib)
 
-    def makeFrame(self, txt, tex, parent, pos, size=(128, 128), text_pos=(0,0)):
-        font=self.ui.font_special
+    def makeFrame(self, txt, tex, parent, pos, size=(128, 128), text_pos=(0,0), font=None, align=None):
+        if align is None:
+            align=TextNode.ACenter
+        if font is None:
+            font=self.ui.font_special
         font_size=font.getPixelsPerUnit()
         frame=DirectFrame(frameSize=_rec2d(size[0],size[1]),
                                 frameColor=(1,1,1,1),
@@ -170,7 +185,7 @@ class InGameMenu(DirectObject):
                                     parent=self.ui.center)
         _resetPivot(frame)
         frame.setPos(_pos2d(pos[0],pos[1]))
-        frame.setColor(cfg['ui_color1'])
+        frame.setColor(cfg['ui_color2'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
         frame.hide()
         return frame

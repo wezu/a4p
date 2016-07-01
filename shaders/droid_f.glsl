@@ -171,20 +171,23 @@ void main()
     //color+= ambient;
     color+= ambient+max(dot(N,up), -0.2)*ambient;
 
+    //texture map
+    color=color*color_map.rgb;
+
     //glow
     float glow=(1.0-color_map.a);
-    color+=glow*glow_color;
+    color=mix(color, glow_color, glow+0.05);
 
     //fog
     float fog_factor=distance(world_pos.xyz,camera_pos);
     float blur_factor=clamp((fog_factor*0.002)-0.2, 0.0, 1.0);
     fog_factor=clamp((fog_factor*0.003)-0.1, 0.0, 1.0);
     //final color with fog
-    vec4 final_color=vec4(mix(color*color_map.rgb, fog.rgb, fog_factor), color_map.a);
+    vec4 final_color=vec4(mix(color, fog.rgb, fog_factor), color_map.a);
     gl_FragData[0]=final_color;
 
     #if defined(ENABLE_BLUR) || defined(ENABLE_GLARE)|| defined(ENABLE_FLARE)|| defined(ENABLE_DISTORTION)
-    vec4 final_aux=vec4(blur_factor, specular, 0.0,final_color.a);
+    vec4 final_aux=vec4(blur_factor, specular+glow*0.2, 0.0,final_color.a);
     gl_FragData[1]=final_aux;
     #endif
     }
