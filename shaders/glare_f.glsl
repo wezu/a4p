@@ -9,10 +9,11 @@ in vec2 uv;
 void main()
     {
     vec4 blured_aux=texture(blurAuxTex,uv);
-    vec4 aux=texture(auxTex, uv);
+    //vec4 aux=texture(auxTex, uv);
     vec4 color=texture(colorTex, uv);
 
-    float specfactor=blured_aux.g+aux.g;
+    float specfactor=blured_aux.g+(blured_aux.g*blured_aux.g);
+    //float specfactor=blured_aux.g;
 
     vec3 gray = vec3(dot(vec3(0.2126,0.7152,0.0722), color.rgb));
     color= vec4(mix(color.rgb, gray, 0.5), 1.0);

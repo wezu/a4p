@@ -5,6 +5,7 @@
 uniform sampler2D p3d_Texture0;
 uniform sampler2D strip;
 uniform float osg_FrameTime;
+uniform float gui_alpha_scale;
 
 in vec4 v_color;
 in vec2 uv;
@@ -18,5 +19,5 @@ void main()
     vec2 moved_uv=uv+strip_tex.r*0.02;
     vec4 tex=texture(p3d_Texture0, moved_uv);
 
-    final_color=vec4(v_color.rgb+strip_tex.rgb, tex.a);
+    final_color=vec4(v_color.rgb+strip_tex.rgb, tex.a*gui_alpha_scale);
     }

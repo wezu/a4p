@@ -11,6 +11,8 @@ glsl-glare 1
 glsl-lut 1
 glsl-shadow-blur 0.4
 glsl-shadow-size 2048
+hud_color 0.33 0.894 1.0 0.8
+hud_text_color 0.94 0.0 0.1 1.0
 key-back s
 key-fire mouse1
 key-forward w
@@ -28,13 +30,13 @@ lut-tex lut_16.png
 mouse-lag 0.0
 mouse-scroll-speed 0.02
 mouse-speed 10.0
-music-volume 0.1
+music-volume 0.3
 notify-level-a4p debug
 pause-on-focus-lost False
 sfx-distance-factor 10.0
 sfx-doppler-factor 1.0
-show-frame-rate-meter 0
-sound-volume 0.2
+show-frame-rate-meter 1
+sound-volume 0.6
 source-dir source
 speakermode raw
 srgb False

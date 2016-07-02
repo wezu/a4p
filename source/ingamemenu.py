@@ -144,6 +144,7 @@ class InGameMenu(DirectObject):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
         for name, element in self.elements.items():
             element.setAttrib(shader_attrib)
+            element.setShaderInput('gui_alpha_scale',cfg['hud_color'][3])
 
     def makeFrame(self, txt, tex, parent, pos, size=(128, 128), text_pos=(0,0), font=None, align=None):
         if align is None:
@@ -160,11 +161,11 @@ class InGameMenu(DirectObject):
                                 text_font=font,
                                 text_align=TextNode.ACenter,
                                 text_pos=text_pos,
-                                text_fg=cfg['ui_color2'],
+                                text_fg=cfg['hud_text_color'],
                                 parent=parent)
         _resetPivot(frame)
         frame.setPos(_pos2d(pos[0],pos[1]))
-        frame.setColor(cfg['ui_color1'])
+        frame.setColor(cfg['hud_color'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
         return frame
 

@@ -645,8 +645,11 @@ class MainMenu(DirectObject):
         for name, element in self.elements.items():
             if name not in ('scrolled_frame'):
                 element.setShader(shader)
+                element.setShaderInput('gui_alpha_scale',1.0)
         self.elements['scrolled_frame'].verticalScroll.setShader(shader)
+        self.elements['scrolled_frame'].verticalScroll.setShaderInput('gui_alpha_scale',1.0)
         self.elements['scrolled_frame'].verticalScroll.thumb.setShader(shader)
+        self.elements['scrolled_frame'].verticalScroll.thumb.setShaderInput('gui_alpha_scale',1.0)
 
         ring_shader=Shader.load(Shader.SLGLSL, path+'shaders/ring_v.glsl',path+'shaders/ring_f.glsl')
         for ring in self.rings:

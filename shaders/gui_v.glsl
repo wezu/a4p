@@ -17,5 +17,6 @@ void main()
     gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;
     uv=p3d_MultiTexCoord0;
     v_color=p3d_Color+color;
+    v_color.a=p3d_Color.a;
     v_pos=gl_Position;
     }

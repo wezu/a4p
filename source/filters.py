@@ -61,9 +61,9 @@ class Filters():
                 blurTex2.setWrapU(Texture.WMClamp)
                 blurTex2.setWrapV(Texture.WMClamp)
                 interquad0 = self.manager.renderQuadInto(colortex=blurTex2, div=2)
-                interquad0.setShader(Shader.load(Shader.SLGLSL, path+'shaders/blur_v.glsl', path+'shaders/blur_f.glsl'))
+                interquad0.setShader(Shader.load(Shader.SLGLSL, path+'shaders/blur_ex_v.glsl', path+'shaders/blur_ex_f.glsl'))
                 interquad0.setShaderInput('input_map', auxTex)
-                interquad0.setShaderInput('sharpness', 0.02)
+                #interquad0.setShaderInput('sharpness', 0.02)
                 self.filters['blur_aux']=interquad0
 
                 #glare
