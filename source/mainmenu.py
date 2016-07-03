@@ -115,8 +115,8 @@ class MainMenu(DirectObject):
         self.game_mode=None
 
         #we make a big canvas for all the buttons to fit, so we don't need to resize the canvas later
-        #minimal canvas size is 17*64 (number of buttons * button size)
-        self.canvas_size=17*64
+        #minimal canvas size is 15*64 (number of buttons * button size)
+        self.canvas_size=15*64
         #all the known maps must also fit the canvas, we might as well look for them now
         self.known_levels=[]
         for map_file in listdir(path+'maps'):
@@ -161,12 +161,10 @@ class MainMenu(DirectObject):
         self.elements['options_key_right']=self.makeSmallButton('KEY: right', 64*8, self.showKeyBind, 'fixed_scroll_canvas', arg='right')
         self.elements['options_key_fire']=self.makeSmallButton('KEY: fire', 64*9, self.showKeyBind, 'fixed_scroll_canvas', arg='fire')
         self.elements['options_key_zoom']=self.makeSmallButton('KEY: zoom', 64*10, self.showKeyBind, 'fixed_scroll_canvas', arg='zoom')
-        self.elements['options_key_sprint']=self.makeSmallButton('KEY: sprint', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='sprint')
-        self.elements['options_key_orders']=self.makeSmallButton('KEY: orders', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='orders')
-        self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
-        self.elements['options_key_gun1']=self.makeSmallButton('KEY: weapon 1', 64*14, self.showKeyBind, 'fixed_scroll_canvas', arg='gun1')
-        self.elements['options_key_gun2']=self.makeSmallButton('KEY: weapon 2', 64*15, self.showKeyBind, 'fixed_scroll_canvas', arg='gun2')
-        self.elements['options_key_gun3']=self.makeSmallButton('KEY: weapon 3', 64*16, self.showKeyBind, 'fixed_scroll_canvas', arg='gun3')
+        self.elements['options_key_menu']=self.makeSmallButton('KEY: show  menu', 64*11, self.showKeyBind, 'fixed_scroll_canvas', arg='menu')
+        self.elements['options_key_gun1']=self.makeSmallButton('KEY: weapon 1', 64*12, self.showKeyBind, 'fixed_scroll_canvas', arg='gun1')
+        self.elements['options_key_gun2']=self.makeSmallButton('KEY: weapon 2', 64*13, self.showKeyBind, 'fixed_scroll_canvas', arg='gun2')
+        self.elements['options_key_gun3']=self.makeSmallButton('KEY: weapon 3', 64*14, self.showKeyBind, 'fixed_scroll_canvas', arg='gun3')
 
         #levels
         for i, level in enumerate(self.known_levels):

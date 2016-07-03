@@ -21,9 +21,7 @@ key-gun2 2
 key-gun3 3
 key-left a
 key-menu escape
-key-orders tab
 key-right d
-key-sprint lshift
 key-zoom mouse3
 log-file None
 lut-tex lut_16.png

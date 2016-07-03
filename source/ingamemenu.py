@@ -9,7 +9,8 @@ import re
 import json
 import traceback
 
-from vfx import Vfx
+
+from guns import guns
 
 #Helper functions
 def _pos2d(x,y):
@@ -50,6 +51,8 @@ class InGameMenu(DirectObject):
         #vars
         self.is_menu_hidden=True
         self.current_gun=1
+        self.current_weapon_slot=None
+        self.cash=2000
 
         #crosshair
         self.elements['hud_crosshair']=DirectFrame(frameSize=_rec2d(64,64),
@@ -60,24 +63,30 @@ class InGameMenu(DirectObject):
         self.elements['hud_crosshair'].setColor(cfg['ui_color1'])
         self.elements['hud_crosshair'].setTransparency(TransparencyAttrib.MAlpha)
         self.elements['hud_crosshair'].setPos(_pos2d(-32, -32))
-        #orders menu
-        self.elements['orders_attack']=self.makeOrdersButton(path+'gui/order1.png', (-128-64,-128), ' ', (-70,200))
-        self.elements['orders_cover']=self.makeOrdersButton(path+'gui/order3.png', (-64,-128), '', (-60,200))
-        self.elements['orders_defend']=self.makeOrdersButton(path+'gui/order2.png', (128-64,-128), ' ', (-50,200))
 
         self.elements['hud_health']=self.makeFrame('100', path+'gui/health.png', ui.bottom_left, (0,-64), (256,64), (-100, 12))
         #self.elements['hud_turbo']
-        self.elements['hud_weapon1']=self.makeFrame('15/15', path+'gui/ammo_pistol.png', ui.bottom_right, (-436+16-16,-32-16), (256,32), (-150, 11), ui.font)
-        self.elements['hud_weapon2']=self.makeFrame('30/30', path+'gui/ammo_hmg.png', ui.bottom_right, (-300-16,-32), (256,32), (-150, 11), ui.font)
-        self.elements['hud_weapon3']=self.makeFrame('5/5', path+'gui/ammo_sniper.png', ui.bottom_right, (-164-16,-32), (256,32), (-150, 11), ui.font)
-        self.elements['hud_score_my']=self.makeFrame('$:100', path+'gui/score_bar1.png', ui.top_left, (0,0), (256,64), (-128, 20), align=TextNode.ALeft)
+        self.elements['hud_weapon1']=self.makeFrame('15/15', path+'gui/gun_pistol.png', ui.bottom_right, (-436+16-16,-32-16), (256,32), (-150, 11), ui.font)
+        self.elements['hud_weapon2']=self.makeFrame('1/1', path+'gui/gun_saw.png', ui.bottom_right, (-300-16,-32), (256,32), (-150, 11), ui.font)
+        self.elements['hud_weapon3']=self.makeFrame('50/50', path+'gui/gun_tool.png', ui.bottom_right, (-164-16,-32), (256,32), (-150, 11), ui.font)
+        self.elements['hud_score_money']=self.makeFrame('$:2000', path+'gui/score_bar1.png', ui.top_left, (0,0), (256,64), (-220, 20), align=TextNode.ALeft)
         self.elements['hud_score_team']=self.makeFrame('\1red\1 0\2 \1cyan\1 vs\2 \1blue\1 0\2', path+'gui/score_bar2.png', ui.top_right, (-256,0), (256,64), (-128, 20))
-        self.elements['hud_time']=self.makeFrame('10:00', path+'gui/time.png', ui.top, (-64,0), (128,64), (-64, 34),ui.font)
+        self.elements['hud_score_time']=self.makeFrame('10:00', path+'gui/time.png', ui.top, (-64,0), (128,64), (-64, 34),ui.font)
+
+        self.elements['menu_frame']=self.makeFrame('', path+'gui/menu_frame.png', ui.center, (-256,-240), (512,512), (-486, 456), align=TextNode.ALeft)
+
+        self.elements['menu_weapon1']=self.makeDropDownButton(path+'gui/gun_pistol.png', (10,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=1, txt='')
+        self.elements['menu_weapon2']=self.makeDropDownButton(path+'gui/gun_saw.png', (174,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=2, txt='')
+        self.elements['menu_weapon3']=self.makeDropDownButton(path+'gui/gun_tool.png', (338,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=3, txt='')
+
+        #guns for buying
+        for index, (gun_name, gun) in enumerate(guns.items()):
+            self.elements['buy_gun_'+gun_name]=self.makeDropDownButton(path+gun['icon'], (10,89+32*index), self.elements['menu_frame'], cmd=self.buyGun, arg=gun_name, txt='$'+str(gun['cost']))
 
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
-    def set_gun(self, gun):
+    def setGun(self, gun):
         if gun==self.current_gun:
             return
         current_gun_pos=self.elements['hud_weapon'+str(self.current_gun)].getPos()
@@ -86,44 +95,81 @@ class InGameMenu(DirectObject):
         LerpPosInterval(self.elements['hud_weapon'+str(gun)], 0.2, gun_pos-(-16,0, -16)).start()
         self.current_gun=gun
 
-    def showElements(self, show_pattern):
+    def _checkPattern(self, name, *args):
+        for pattern in args:
+            if name.startswith(pattern):
+                return True
+        return False
+
+    def buyGun(self, gun_name, event=None):
+        cost=guns[gun_name]['cost']
+        if cost > self.cash:
+            messenger.send('audio-sfx',['error', base.cam])
+            return
+        self.cash-= cost
+        self.elements['hud_score_money']['text']='$:'+str(self.cash)
+        self.elements['hud_weapon'+str(self.current_weapon_slot)]['frameTexture']=loadTex(path+guns[gun_name]['icon'])
+        self.elements['hud_weapon'+str(self.current_weapon_slot)]['text']=str(guns[gun_name]['ammo'][0])+'/'+str(guns[gun_name]['ammo'][1])
+        self.elements['menu_weapon'+str(self.current_weapon_slot)]['frameTexture']=loadTex(path+guns[gun_name]['icon'])
+        self.showElements('menu_', 'hud_score_')
+        self.current_weapon_slot=None
+        messenger.send('audio-sfx',['change-weapon', base.cam])
+
+    def showGunsToBuy(self, slot, event=None):
+        if slot==self.current_weapon_slot:
+            self.showElements('menu_', 'hud_score_')
+            return
+        x=10
+        if slot == 2:
+            x=174
+        if slot == 3:
+            x=338
+        self.current_weapon_slot=slot
+        buttons=self.unhideElements('buy_gun_')
+        messenger.send('audio-sfx',['click', base.cam])
+        for button in buttons:
+            button.setX(x)
+
+
+    def unhideElements(self, *args):
+        elements=[]
         for  name, frame in self.elements.items():
-            if name.startswith(show_pattern):
+            if self._checkPattern(name, args):
                 frame.show()
+                elements.append(frame)
+        return elements
+
+
+    def showElements(self, *args):
+        elements=[]
+        for  name, frame in self.elements.items():
+            if self._checkPattern(name, args):
+                frame.show()
+                elements.append(frame)
             else:
                 frame.hide()
+        return elements
 
     def showMenu(self, window_focus=None):
         if window_focus is not None:
             if window_focus == False and not self.ui.is_main_menu:
                 if self.is_menu_hidden:
                     self.is_menu_hidden=False
-                    self.hideCrosshair()
+                    self.showElements('menu_', 'hud_score_')
+                    self.current_weapon_slot==None
+                    #self.hideCrosshair()
                     self.ui.showSoftCursor()
-                    log.debug("showing menu")
             return
         if self.is_menu_hidden:
             self.is_menu_hidden=False
-            self.hideCrosshair()
+            self.showElements('menu_', 'hud_score_')
+            self.current_weapon_slot=None
+            #self.hideCrosshair()
             self.ui.showSoftCursor()
-            log.debug("showing menu")
         else:
             self.is_menu_hidden=True
             self.ui.hideSoftCursor()
             self.showElements('hud_')
-            log.debug("hidding menu")
-
-    def showOrders(self):
-        if self.is_menu_hidden:
-            self.is_menu_hidden=False
-            self.ui.showSoftCursor()
-            self.showElements('orders_')
-            log.debug("showing orders")
-        else:
-            self.is_menu_hidden=True
-            self.ui.hideSoftCursor()
-            self.showElements('hud_')
-            log.debug("hidding orders")
 
     def hide(self):
         for name, element in self.elements.items():
@@ -139,6 +185,9 @@ class InGameMenu(DirectObject):
 
     def hideCrosshair(self):
         self.elements['hud_crosshair'].hide()
+
+    def setGuiAlpha(self, element, alpha, event=None):
+        element.setShaderInput('gui_alpha_scale',float(alpha))
 
     def setShader(self, v_shader, f_shader):
         shader_attrib = ShaderAttrib.make(Shader.load(Shader.SLGLSL, v_shader,f_shader))
@@ -159,7 +208,7 @@ class InGameMenu(DirectObject):
                                 text=txt,
                                 text_scale=font_size,
                                 text_font=font,
-                                text_align=TextNode.ACenter,
+                                text_align=align,
                                 text_pos=text_pos,
                                 text_fg=cfg['hud_text_color'],
                                 parent=parent)
@@ -169,24 +218,34 @@ class InGameMenu(DirectObject):
         frame.setTransparency(TransparencyAttrib.MAlpha)
         return frame
 
-    def makeOrdersButton(self, tex, pos, txt, txt_pos):
+    def makeDropDownButton(self, tex, pos, parent, cmd, arg=None, txt=''):
         font=self.ui.font
         font_size=font.getPixelsPerUnit()
-        frame=DirectFrame(frameSize=_rec2d(128,256),
+        frame=DirectFrame(frameSize=_rec2d(256,32),
                                     frameColor=(1,1,1,1.0),
                                     text=txt,
                                     frameTexture=loadTex(tex),
                                     text_scale=font_size,
                                     text_font=font,
                                     text_align=TextNode.ACenter,
-                                    text_pos=txt_pos,
+                                    text_pos=(-150, 11),
                                     text_fg=cfg['ui_color2'],
-                                    state=DGG.NORMAL,
-                                    suppressMouse=True,
-                                    parent=self.ui.center)
+                                    parent=parent)
         _resetPivot(frame)
         frame.setPos(_pos2d(pos[0],pos[1]))
-        frame.setColor(cfg['ui_color2'])
+        frame.setColor(cfg['ui_color1'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
-        frame.hide()
+        active_frame=DirectFrame(frameSize=_rec2d(144,32),
+                                    frameColor=(1,0,0,0.5),
+                                    frameTexture=loadTex(path+'gui/empty_64.png'),
+                                    state=DGG.NORMAL,
+                                    parent=parent)
+        _resetPivot(active_frame)
+        active_frame.setPos(_pos2d(pos[0],pos[1]))
+        active_frame.wrtReparentTo(frame)
+        if cmd:
+            active_frame.bind(DGG.B1PRESS, cmd, [arg])
+
+        active_frame.bind(DGG.WITHOUT, self.setGuiAlpha,[frame, 1.0])
+        active_frame.bind(DGG.WITHIN, self.setGuiAlpha, [frame, 2.0])
         return frame

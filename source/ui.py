@@ -116,6 +116,10 @@ class UserInterface(DirectObject):
             self.cursor.hide()
 
     def hideSoftCursor(self):
+        half_x=base.win.getXSize()//2
+        half_y=base.win.getYSize()//2
+        base.win.movePointer(0, half_x, half_y)
+
         self.cursor['frameTexture']=loader.loadTexture(path+'gui/empty_64.png')
 
     def showSoftCursor(self):
@@ -137,27 +141,21 @@ class UserInterface(DirectObject):
         self.accept(self.getMappedKey(cfg['key-forward']), self.key_map.__setitem__, ["forward", True])
         self.accept(self.getMappedKey(cfg['key-left']), self.key_map.__setitem__, ["left", True])
         self.accept(self.getMappedKey(cfg['key-right']), self.key_map.__setitem__, ["right", True])
-        self.accept(self.getMappedKey(cfg['key-sprint']), self.key_map.__setitem__, ["sprint", True])
         self.accept(self.getMappedKey(cfg['key-back']+'-up'), self.key_map.__setitem__, ["back", False])
         self.accept(self.getMappedKey(cfg['key-fire']+'-up'), self.key_map.__setitem__, ["fire", False])
         self.accept(self.getMappedKey(cfg['key-forward']+'-up'), self.key_map.__setitem__, ["forward", False])
         self.accept(self.getMappedKey(cfg['key-left']+'-up'), self.key_map.__setitem__, ["left", False])
         self.accept(self.getMappedKey(cfg['key-right']+'-up'), self.key_map.__setitem__, ["right", False])
-        self.accept(self.getMappedKey(cfg['key-sprint']+'-up'), self.key_map.__setitem__, ["sprint", False])
 
         self.accept(self.getMappedKey(cfg['key-zoom']), self.zoom)
-        self.accept(self.getMappedKey(cfg['key-gun1']), self.set_gun, [1])
-        self.accept(self.getMappedKey(cfg['key-gun2']), self.set_gun, [2])
-        self.accept(self.getMappedKey(cfg['key-gun3']), self.set_gun, [3])
-
-        #cfg['key-menu']
-        #cfg['key-orders']
+        self.accept(self.getMappedKey(cfg['key-gun1']), self.setGun, [1])
+        self.accept(self.getMappedKey(cfg['key-gun2']), self.setGun, [2])
+        self.accept(self.getMappedKey(cfg['key-gun3']), self.setGun, [3])
 
         self.accept(self.getMappedKey(cfg['key-menu']), self.in_game_menu.showMenu)
-        self.accept(self.getMappedKey(cfg['key-orders']), self.in_game_menu.showOrders)
 
-    def set_gun(self, gun):
-        self.in_game_menu.set_gun(gun)
+    def setGun(self, gun):
+        self.in_game_menu.setGun(gun)
 
     def zoom(self):
         fov=base.camLens.getFov()
