@@ -16,6 +16,8 @@ class World(DirectObject):
         self.min_v=Vec3(5.0, 5.0, 5.0)
         self.pc_droid_node=None
 
+        self.last_pc_jump_time=0.0
+
         # Task
         taskMgr.add(self.update, 'world_update')
         #events
@@ -100,9 +102,11 @@ class World(DirectObject):
     def movePodGhost(self, pod_id, pos, hpr):
         pass
 
-    def applyPlayerPodForce(self, force):
-        self.pc_droid_node.node().applyCentralForce(force)
-
+    def applyPlayerPodForce(self, force, jump):
+        self.pc_droid_node.node().applyCentralForce(force*150.0)
+        if jump and globalClock.getRealTime()-self.last_pc_jump_time > 1.5:
+            self.pc_droid_node.node().applyCentralForce(Vec3(0, 0, 3000.0))
+            self.last_pc_jump_time=globalClock.getRealTime()
 
     def loadModel(self, model_name):
         model = loader.loadModel(path+'models/'+model_name)

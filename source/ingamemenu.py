@@ -53,7 +53,7 @@ class InGameMenu(DirectObject):
         self.current_gun=1
         self.current_weapon_slot=None
         self.cash=2000
-
+        self.current_order=None
         #crosshair
         self.elements['hud_crosshair']=DirectFrame(frameSize=_rec2d(64,64),
                                     frameColor=(1,1,1,1.0),
@@ -73,18 +73,42 @@ class InGameMenu(DirectObject):
         self.elements['hud_score_team']=self.makeFrame('\1red\1 0\2 \1cyan\1 vs\2 \1blue\1 0\2', path+'gui/score_bar2.png', ui.top_right, (-256,0), (256,64), (-128, 20))
         self.elements['hud_score_time']=self.makeFrame('10:00', path+'gui/time.png', ui.top, (-64,0), (128,64), (-64, 34),ui.font)
 
-        self.elements['menu_frame']=self.makeFrame('', path+'gui/menu_frame.png', ui.center, (-256,-240), (512,512), (-486, 456), align=TextNode.ALeft)
+        self.elements['menu_frame']=self.makeFrame('', path+'gui/menu_frame.png', ui.center, (-256,-240), (512,512), (-256, 380))
 
         self.elements['menu_weapon1']=self.makeDropDownButton(path+'gui/gun_pistol.png', (10,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=1, txt='')
         self.elements['menu_weapon2']=self.makeDropDownButton(path+'gui/gun_saw.png', (174,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=2, txt='')
         self.elements['menu_weapon3']=self.makeDropDownButton(path+'gui/gun_tool.png', (338,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=3, txt='')
 
+        self.elements['menu_orders']=self.makeFrame('ORDERS:', path+'gui/empty_64.png', ui.center, (-256,-240), (512,512), (-256, 380))
+        self.elements['menu_orders']['text_fg']=cfg['ui_color1']
+        self.elements['menu_orders_defend']=self.makeDropDownButton(path+'gui/orders_defend.png', (10,157), self.elements['menu_frame'], cmd=self.showDroidsToOrder,arg='defend', txt='')
+        self.elements['menu_orders_attack']=self.makeDropDownButton(path+'gui/orders_attack.png', (174,157), self.elements['menu_frame'], cmd=self.showDroidsToOrder,arg='attack', txt='')
+        self.elements['menu_orders_support']=self.makeDropDownButton(path+'gui/orders_support.png', (338,157), self.elements['menu_frame'], cmd=self.showDroidsToOrder,arg='support', txt='')
+
         #guns for buying
         for index, (gun_name, gun) in enumerate(guns.items()):
             self.elements['buy_gun_'+gun_name]=self.makeDropDownButton(path+gun['icon'], (10,89+32*index), self.elements['menu_frame'], cmd=self.buyGun, arg=gun_name, txt='$'+str(gun['cost']))
 
+        temp_droid_list=[
+                        {'orders':'defend', 'name':'droid 0'},
+                        {'orders':'attack', 'name':'droid 1'},
+                        {'orders':'attack', 'name':'droid 2'},
+                        {'orders':'support', 'name':'droid 3'}
+                        ]
+        self.setDroidSlaves(temp_droid_list)
+
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def setDroidSlaves(self, droid_list):
+        for i, droid in enumerate(droid_list):
+            self.elements['droid_'+str(i)]=self.makeDropDownButton(path+'gui/orders_'+droid['orders']+'1.png',
+                                                                    (10,189+32*i),
+                                                                    self.elements['menu_frame'],
+                                                                    cmd=self.setDroidOrder,
+                                                                    arg=i,
+                                                                    txt=droid['name'],
+                                                                    active_area=(248,32))
 
     def setGun(self, gun):
         if gun==self.current_gun:
@@ -101,6 +125,29 @@ class InGameMenu(DirectObject):
                 return True
         return False
 
+    def setDroidOrder(self, id, event=None):
+        #TODO: set the AI mode
+        self.elements['droid_'+str(id)]['frameTexture']=loadTex(path+'gui/orders_'+self.current_order+'1.png')
+
+    def showDroidsToOrder(self, order, event=None):
+        if order==self.current_order:
+            self.showElements('menu_', 'hud_score_')
+            self.current_order=None
+            return
+        self.current_order=order
+        #if order == 'defend':
+        x=10
+        if order == 'attack':
+            x=140
+        if order == 'support':
+            x=238
+        buttons=self.unhideElements('droid_')
+        self.hideElements('buy_gun_')
+        messenger.send('audio-sfx',['click', base.cam])
+        for button in buttons:
+            button.setX(x)
+
+
     def buyGun(self, gun_name, event=None):
         cost=guns[gun_name]['cost']
         if cost > self.cash:
@@ -116,8 +163,10 @@ class InGameMenu(DirectObject):
         messenger.send('audio-sfx',['change-weapon', base.cam])
 
     def showGunsToBuy(self, slot, event=None):
+        self.current_order=None
         if slot==self.current_weapon_slot:
             self.showElements('menu_', 'hud_score_')
+            self.current_weapon_slot=None
             return
         x=10
         if slot == 2:
@@ -125,6 +174,7 @@ class InGameMenu(DirectObject):
         if slot == 3:
             x=338
         self.current_weapon_slot=slot
+        self.hideElements('menu_orders','droid_')
         buttons=self.unhideElements('buy_gun_')
         messenger.send('audio-sfx',['click', base.cam])
         for button in buttons:
@@ -139,6 +189,13 @@ class InGameMenu(DirectObject):
                 elements.append(frame)
         return elements
 
+    def hideElements(self, *args):
+        elements=[]
+        for  name, frame in self.elements.items():
+            if self._checkPattern(name, args):
+                frame.hide()
+                elements.append(frame)
+        return elements
 
     def showElements(self, *args):
         elements=[]
@@ -218,7 +275,7 @@ class InGameMenu(DirectObject):
         frame.setTransparency(TransparencyAttrib.MAlpha)
         return frame
 
-    def makeDropDownButton(self, tex, pos, parent, cmd, arg=None, txt=''):
+    def makeDropDownButton(self, tex, pos, parent, cmd, arg=None, txt='', active_area=(144,32)):
         font=self.ui.font
         font_size=font.getPixelsPerUnit()
         frame=DirectFrame(frameSize=_rec2d(256,32),
@@ -235,7 +292,7 @@ class InGameMenu(DirectObject):
         frame.setPos(_pos2d(pos[0],pos[1]))
         frame.setColor(cfg['ui_color1'])
         frame.setTransparency(TransparencyAttrib.MAlpha)
-        active_frame=DirectFrame(frameSize=_rec2d(144,32),
+        active_frame=DirectFrame(frameSize=_rec2d(active_area[0],active_area[1]),
                                     frameColor=(1,0,0,0.5),
                                     frameTexture=loadTex(path+'gui/empty_64.png'),
                                     state=DGG.NORMAL,

@@ -1,5 +1,6 @@
 from panda3d.core import *
 from direct.interval.IntervalGlobal import *
+import random
 
 class PCDroid():
     def __init__(self, ui):
@@ -16,10 +17,20 @@ class PCDroid():
         self.model.reparentTo(self.node)
         self.model.hide()
 
+        self.movment_vector=Vec3(0, 0, 0)
+        self.jump=False
+        self.last_jump_time=0.0
         # Task
         #taskMgr.add(self.update, 'pc_droid_update')
+        #taskMgr.doMethodLater(1.0/30.0,self.networkUpdate, 'pc_droid_net_update')
+
 
     #tasks
+    def networkUpdate(self, task):
+        #not using networking atm!!!
+        messenger.send('world-player-pod-force',[self.movment_vector, self.jump])
+        return task.again
+
     def update(self, task):
         self.camera_node.setPos(render, self.node.getPos(render))
         dt = globalClock.getDt()
@@ -43,10 +54,19 @@ class PCDroid():
             if self.ui.key_map['right']:
                 force.setX(1.0)
             force.normalize()
-            force=force*50.0
+            #force=force*50.0
             force = render.getRelativeVector(self.camera_node, force)
-            if force.lengthSquared() != 0.0:
-                messenger.send('world-player-pod-force',[force])
+            #if force.lengthSquared() != 0.0:
+            self.movment_vector=force
+
+            if self.ui.key_map['jump']:
+                self.jump=True
+                if globalClock.getRealTime()-self.last_jump_time > 1.5:
+                    messenger.send('audio-sfx',['jump', self.model])
+                    self.last_jump_time=globalClock.getRealTime()
+            else:
+                self.jump=False
+                #messenger.send('world-player-pod-force',[force])
         return task.cont
 
     #functions
@@ -72,3 +92,4 @@ class PCDroid():
         base.cam.wrtReparentTo(self.camera_gimbal)
         base.win.movePointer(0, base.win.getXSize()//2, base.win.getYSize()//2)
         taskMgr.add(self.update, 'pc_droid_update')
+        taskMgr.doMethodLater(1.0/30.0,self.networkUpdate, 'pc_droid_net_update')

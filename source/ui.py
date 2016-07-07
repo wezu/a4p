@@ -91,7 +91,7 @@ class UserInterface(DirectObject):
                     'forward':False,
                     'left':False,
                     'right':False,
-                    'sprint':False}
+                    'jump':False}
         #vars
         self.is_zoomed=False
         self.is_main_menu=True
@@ -141,11 +141,14 @@ class UserInterface(DirectObject):
         self.accept(self.getMappedKey(cfg['key-forward']), self.key_map.__setitem__, ["forward", True])
         self.accept(self.getMappedKey(cfg['key-left']), self.key_map.__setitem__, ["left", True])
         self.accept(self.getMappedKey(cfg['key-right']), self.key_map.__setitem__, ["right", True])
+        self.accept(self.getMappedKey(cfg['key-jump']), self.key_map.__setitem__, ["jump", True])
         self.accept(self.getMappedKey(cfg['key-back']+'-up'), self.key_map.__setitem__, ["back", False])
         self.accept(self.getMappedKey(cfg['key-fire']+'-up'), self.key_map.__setitem__, ["fire", False])
         self.accept(self.getMappedKey(cfg['key-forward']+'-up'), self.key_map.__setitem__, ["forward", False])
         self.accept(self.getMappedKey(cfg['key-left']+'-up'), self.key_map.__setitem__, ["left", False])
         self.accept(self.getMappedKey(cfg['key-right']+'-up'), self.key_map.__setitem__, ["right", False])
+        self.accept(self.getMappedKey(cfg['key-jump']+'-up'), self.key_map.__setitem__, ["jump", False])
+
 
         self.accept(self.getMappedKey(cfg['key-zoom']), self.zoom)
         self.accept(self.getMappedKey(cfg['key-gun1']), self.setGun, [1])

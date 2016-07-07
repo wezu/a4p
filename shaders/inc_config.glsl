@@ -1,5 +1,5 @@
 //A4P config file, edit at your own risk
-#define DISABLE_DISTORTION 
+#define ENABLE_DISTORTION 
 #define ENABLE_BLUR 
 #define ENABLE_GLARE 
 #define ENABLE_FLARE 

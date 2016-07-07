@@ -168,12 +168,14 @@ class Audio(DirectObject):
             #we fade the music in, and then fade it out again
             self.music_manager.setVolume(0.0)
             self.current_track.play()
-            self.seq=Sequence(LerpFunc(self.music_manager.setVolume,fromData=0.0,toData=self.music_volume,duration=5.0),
-                        Wait(time-10.0),
-                        LerpFunc(self.music_manager.setVolume,fromData=self.music_volume,toData=0.0,duration=5.0),
+            self.seq=Sequence(LerpFunc(self.musicVolume,fromData=0.0,toData=self.music_volume,duration=2.0),
+                        Wait(time-4.0),
+                        LerpFunc(self.musicVolume,fromData=self.music_volume,toData=0.0,duration=2.0),
                         Func(self.current_track.stop),
                         Func(self.playMusic))
             self.seq.start()
+            if self.current_track.status() != self.current_track.PLAYING:
+                self.current_track.play()
         else:
             log.warning('Audio: No music on playlist!')
 
@@ -193,6 +195,9 @@ class Audio(DirectObject):
         self.setMusicVolume(cfg['music-volume'])
         self.setSoundVolume(cfg['sound-volume'])
 
+    def musicVolume(self, volume):
+        #log.debug('Audio: music volume: '+ str(volume))
+        self.music_manager.setVolume(volume)
 
     def setMusicVolume(self, volume):
         self.music_manager.setVolume(volume)

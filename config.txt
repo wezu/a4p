@@ -5,7 +5,7 @@ font-special font/control-freak.ttf
 fullscreen False
 game-mode normal
 glsl-blur 1
-glsl-distortion 0
+glsl-distortion 1
 glsl-flare 1
 glsl-glare 1
 glsl-lut 1
@@ -19,6 +19,7 @@ key-forward w
 key-gun1 1
 key-gun2 2
 key-gun3 3
+key-jump space
 key-left a
 key-menu escape
 key-right d
@@ -28,7 +29,7 @@ lut-tex lut_16.png
 mouse-lag 0.0
 mouse-scroll-speed 0.02
 mouse-speed 10.0
-music-volume 0.3
+music-volume 0.4
 notify-level-a4p debug
 pause-on-focus-lost False
 sfx-distance-factor 10.0
