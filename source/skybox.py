@@ -23,6 +23,9 @@ class Skybox():
         self.skydome.reparentTo(render)
         self.skydome.hide()
 
+    def hide(self):
+        self.skydome.hide()
+
     def show(self):
         self.skydome.show()
 

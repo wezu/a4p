@@ -59,6 +59,7 @@ class Client(DirectObject):
         self.loading_status=set()
         self.level_root=render.attachNewNode('level_root')
         self.level_root.hide()
+        self.is_in_game=False
 
         #events
         base.win.setCloseRequestEvent('exit-event')
@@ -69,7 +70,8 @@ class Client(DirectObject):
         self.accept( 'load-level', self.onLevelLoad)
         self.accept( 'loading-done', self.onLoadingDone)
         self.accept( 'reload-shaders', self.onShaderReload)
-
+        self.accept( 'client-set-team', self.onTeamCahnge)
+        self.accept( 'client-quit', self.onQuit)
         # Task
         taskMgr.add(self.update, 'client_update')
 
@@ -155,6 +157,26 @@ class Client(DirectObject):
         return task.done
 
     #events
+    def onQuit(self):
+        self.level_root.removeNode()
+        self.level_root=render.attachNewNode('level_root')
+        self.level_root.hide()
+        if self.ui.is_zoomed:
+            self.ui.zoom()
+        self.sun_and_sky.hide()
+        self.droid.disable()
+        self.ui.unbindKeys()
+        self.ui.in_game_menu.hide()
+        self.ui.main_menu.show()
+        self.audio.setMusic('background')
+        self.loading_status=set()
+        self.is_in_game=False
+        messenger.send('world-clear-level')
+
+
+    def onTeamCahnge(self, team):
+        self.droid.setTeam(team)
+
     def onShaderReload(self):
         log.debug('Client: Reloading shaders')
         for mesh in self.level_root.getChildren():
@@ -179,6 +201,7 @@ class Client(DirectObject):
             self.ui.in_game_menu.showElements('hud_')
             self.ui.hideSoftCursor()
             self.ui.is_main_menu=False
+            self.is_in_game=True
             messenger.send('world-link-objects', [self.droid.node, 'pc_droid_node'])
 
     def onLevelLoad(self, map_name):
@@ -210,7 +233,8 @@ class Client(DirectObject):
     def onWindowFocus(self):
         self.window_focused=base.win.getProperties().getForeground()
         log.debug('window-event: Focus set to '+str(self.window_focused))
-        self.ui.in_game_menu.showMenu(self.window_focused)
+        if self.is_in_game:
+            self.ui.in_game_menu.showMenu(self.window_focused)
         if not self.window_focused:
             self.ui.cursor_pos=(0,0,0)
         if cfg['pause-on-focus-lost']:

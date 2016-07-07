@@ -44,6 +44,7 @@ textures-power-2 None
 ui_color1 0.33 0.894 1.0 1.0
 ui_color2 0.94 0.0 0.1 1.0
 ui_color3 0.33 0.56 1.0 1.0
+ui_menu_shadow 0.45
 undecorated False
 use-filters 1
 use-fxaa 1

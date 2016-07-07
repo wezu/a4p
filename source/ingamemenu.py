@@ -54,6 +54,7 @@ class InGameMenu(DirectObject):
         self.current_weapon_slot=None
         self.cash=2000
         self.current_order=None
+        self.last_gun_change_time=0.0
         #crosshair
         self.elements['hud_crosshair']=DirectFrame(frameSize=_rec2d(64,64),
                                     frameColor=(1,1,1,1.0),
@@ -73,6 +74,15 @@ class InGameMenu(DirectObject):
         self.elements['hud_score_team']=self.makeFrame('\1red\1 0\2 \1cyan\1 vs\2 \1blue\1 0\2', path+'gui/score_bar2.png', ui.top_right, (-256,0), (256,64), (-128, 20))
         self.elements['hud_score_time']=self.makeFrame('10:00', path+'gui/time.png', ui.top, (-64,0), (128,64), (-64, 34),ui.font)
 
+        self.elements['menu_shadow']=DirectFrame(frameSize=_rec2d(512,512),
+                                    frameColor=(1,1,1,1.0),
+                                    frameTexture=loadTex(path+'gui/menu_shadow.png'),
+                                    parent=self.ui.center)
+        _resetPivot(self.elements['menu_shadow'])
+        self.elements['menu_shadow'].setColor((0,0,0,0))
+        self.elements['menu_shadow'].setTransparency(TransparencyAttrib.MAlpha)
+        self.elements['menu_shadow'].setPos(_pos2d(-256,-240))
+
         self.elements['menu_frame']=self.makeFrame('', path+'gui/menu_frame.png', ui.center, (-256,-240), (512,512), (-256, 380))
 
         self.elements['menu_weapon1']=self.makeDropDownButton(path+'gui/gun_pistol.png', (10,57), self.elements['menu_frame'], cmd=self.showGunsToBuy,arg=1, txt='')
@@ -90,15 +100,40 @@ class InGameMenu(DirectObject):
             self.elements['buy_gun_'+gun_name]=self.makeDropDownButton(path+gun['icon'], (10,89+32*index), self.elements['menu_frame'], cmd=self.buyGun, arg=gun_name, txt='$'+str(gun['cost']))
 
         temp_droid_list=[
-                        {'orders':'defend', 'name':'droid 0'},
-                        {'orders':'attack', 'name':'droid 1'},
-                        {'orders':'attack', 'name':'droid 2'},
-                        {'orders':'support', 'name':'droid 3'}
+                        {'orders':'defend', 'name':'Dinkleberg'},
+                        {'orders':'attack', 'name':'Megan'},
+                        {'orders':'attack', 'name':'Hypnotoad'},
+                        {'orders':'support', 'name':'Count Spankulot'},
+                        {'orders':'support', 'name':'droid 5'},
+                        {'orders':'support', 'name':'droid 6'},
+                        {'orders':'support', 'name':'droid 7'},
+                        {'orders':'support', 'name':'droid 8'}
                         ]
         self.setDroidSlaves(temp_droid_list)
 
+        self.elements['menu_team']=self.makeFrame('CHANGE TEAM:', path+'gui/empty_64.png', ui.center, (-256,-240), (512,512), (-256, 270))
+        self.elements['menu_team']['text_fg']=cfg['ui_color1']
+        self.elements['menu_team_red']=self.makeButton('\1red\1JOIN RED\2', path+'gui/button6.png', ui.center, (-256,32), (256,64), (-230, 18),cmd=self.setTeam, arg='red', align=TextNode.ALeft)
+        self.elements['menu_team_blue']=self.makeButton('\1blue\1JOIN BLUE\2', path+'gui/button5.png', ui.center, (0,32), (256,64), (-220, 18),cmd=self.setTeam, arg='blue', align=TextNode.ALeft)
+
+
+        self.elements['menu_quit_txt']=self.makeFrame('EXIT MATCH:', path+'gui/empty_64.png', ui.center, (-256,-240), (512,512), (-256, 100))
+        self.elements['menu_quit_txt']['text_fg']=cfg['ui_color1']
+        self.elements['menu_quit']=self.makeButton('QUIT', path+'gui/button4.png', ui.center, (-128,196), (256,64), (-128, 18), cmd=self.quit)
+        self.elements['menu_close']=self.makeButton('', path+'gui/close.png', ui.center, (128+60,-256+22), (64,64), (0, 0), cmd=self.hideMenu, active_area=(48, 48, 16,0))
+        self.elements['menu_close'].setColor(cfg['ui_color2'])
+
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
+
+    def quit(self, *args):
+        self.is_menu_hidden=True
+        messenger.send('client-quit')
+
+    def setTeam(self, team, event=None):
+        messenger.send('client-set-team',[team])
+        messenger.send('audio-sfx',['click', base.cam])
+        self.hideMenu()
 
     def setDroidSlaves(self, droid_list):
         for i, droid in enumerate(droid_list):
@@ -113,6 +148,9 @@ class InGameMenu(DirectObject):
     def setGun(self, gun):
         if gun==self.current_gun:
             return
+        if globalClock.getRealTime()-self.last_gun_change_time < 0.2:
+            return
+        self.last_gun_change_time=globalClock.getRealTime()
         current_gun_pos=self.elements['hud_weapon'+str(self.current_gun)].getPos()
         gun_pos=self.elements['hud_weapon'+str(gun)].getPos()
         LerpPosInterval(self.elements['hud_weapon'+str(self.current_gun)], 0.2, current_gun_pos-(16,0, 16)).start()
@@ -142,7 +180,7 @@ class InGameMenu(DirectObject):
         if order == 'support':
             x=238
         buttons=self.unhideElements('droid_')
-        self.hideElements('buy_gun_')
+        self.hideElements('buy_gun_', 'menu_quit', 'menu_team')
         messenger.send('audio-sfx',['click', base.cam])
         for button in buttons:
             button.setX(x)
@@ -174,7 +212,7 @@ class InGameMenu(DirectObject):
         if slot == 3:
             x=338
         self.current_weapon_slot=slot
-        self.hideElements('menu_orders','droid_')
+        self.hideElements('menu_orders','droid_', 'menu_quit', 'menu_team')
         buttons=self.unhideElements('buy_gun_')
         messenger.send('audio-sfx',['click', base.cam])
         for button in buttons:
@@ -207,6 +245,11 @@ class InGameMenu(DirectObject):
                 frame.hide()
         return elements
 
+    def hideMenu(self, event=None):
+        self.is_menu_hidden=True
+        self.ui.hideSoftCursor()
+        self.showElements('hud_')
+
     def showMenu(self, window_focus=None):
         if window_focus is not None:
             if window_focus == False and not self.ui.is_main_menu:
@@ -214,6 +257,7 @@ class InGameMenu(DirectObject):
                     self.is_menu_hidden=False
                     self.showElements('menu_', 'hud_score_')
                     self.current_weapon_slot==None
+                    self.current_order=None
                     #self.hideCrosshair()
                     self.ui.showSoftCursor()
             return
@@ -221,6 +265,7 @@ class InGameMenu(DirectObject):
             self.is_menu_hidden=False
             self.showElements('menu_', 'hud_score_')
             self.current_weapon_slot=None
+            self.current_order=None
             #self.hideCrosshair()
             self.ui.showSoftCursor()
         else:
@@ -251,6 +296,13 @@ class InGameMenu(DirectObject):
         for name, element in self.elements.items():
             element.setAttrib(shader_attrib)
             element.setShaderInput('gui_alpha_scale',cfg['hud_color'][3])
+        self.elements['menu_shadow'].setShaderInput('gui_alpha_scale',float(cfg['ui_menu_shadow']))
+
+        self.elements['menu_quit'].setShaderInput('gui_alpha_scale',0.7)
+        self.elements['menu_close'].setShaderInput('gui_alpha_scale',0.7)
+        self.elements['menu_team_red'].setShaderInput('gui_alpha_scale',0.7)
+        self.elements['menu_team_blue'].setShaderInput('gui_alpha_scale',0.7)
+
 
     def makeFrame(self, txt, tex, parent, pos, size=(128, 128), text_pos=(0,0), font=None, align=None):
         if align is None:
@@ -275,6 +327,64 @@ class InGameMenu(DirectObject):
         frame.setTransparency(TransparencyAttrib.MAlpha)
         return frame
 
+    def makeButton(self, txt, tex, parent, pos, size=(128, 128), text_pos=(0,0), cmd=None, arg=None, active_area=None, font=None, align=None):
+        if align is None:
+            align=TextNode.ACenter
+        if font is None:
+            font=self.ui.font_special
+        font_size=font.getPixelsPerUnit()
+        if active_area:
+            frame=DirectFrame(frameSize=_rec2d(size[0],size[1]),
+                                    frameColor=(1,1,1,1.0),
+                                    text=txt,
+                                    frameTexture=loadTex(tex),
+                                    text_scale=font_size,
+                                    text_font=font,
+                                    text_align=align,
+                                    text_pos=text_pos,
+                                    text_fg=cfg['hud_text_color'],
+                                    parent=parent)
+            _resetPivot(frame)
+            frame.setPos(_pos2d(pos[0],pos[1]))
+            frame.setColor(cfg['ui_color1'])
+            frame.setTransparency(TransparencyAttrib.MAlpha)
+            active_frame=DirectFrame(frameSize=_rec2d(active_area[0],active_area[1]),
+                                    frameColor=(0,1,0,0.0),
+                                    frameTexture=loadTex(path+'gui/empty_64.png'),
+                                    state=DGG.NORMAL,
+                                    parent=parent)
+            _resetPivot(active_frame)
+            if cmd:
+                if arg:
+                    active_frame.bind(DGG.B1PRESS, cmd, [arg])
+                else:
+                    active_frame.bind(DGG.B1PRESS, cmd)
+            active_frame.bind(DGG.WITHOUT, self.setGuiAlpha,[frame, 0.7])
+            active_frame.bind(DGG.WITHIN, self.setGuiAlpha, [frame, 1.0])
+            active_frame.setPos(_pos2d(pos[0]+active_area[2],pos[1]+active_area[3]))
+            active_frame.wrtReparentTo(frame)
+        else:
+            frame=DirectFrame(frameSize=_rec2d(size[0],size[1]),
+                                    frameColor=(1,1,1,1.0),
+                                    text=txt,
+                                    frameTexture=loadTex(tex),
+                                    text_scale=font_size,
+                                    text_font=font,
+                                    text_align=align,
+                                    text_pos=text_pos,
+                                    text_fg=cfg['hud_text_color'],
+                                    state=DGG.NORMAL,
+                                    parent=parent)
+            _resetPivot(frame)
+            frame.setPos(_pos2d(pos[0],pos[1]))
+            frame.setColor(cfg['hud_color'])
+            frame.setTransparency(TransparencyAttrib.MAlpha)
+            if cmd:
+                frame.bind(DGG.B1PRESS, cmd, [arg])
+            frame.bind(DGG.WITHOUT, self.setGuiAlpha,[frame, 0.7])
+            frame.bind(DGG.WITHIN, self.setGuiAlpha, [frame, 1.0])
+        return frame
+
     def makeDropDownButton(self, tex, pos, parent, cmd, arg=None, txt='', active_area=(144,32)):
         font=self.ui.font
         font_size=font.getPixelsPerUnit()
@@ -284,8 +394,8 @@ class InGameMenu(DirectObject):
                                     frameTexture=loadTex(tex),
                                     text_scale=font_size,
                                     text_font=font,
-                                    text_align=TextNode.ACenter,
-                                    text_pos=(-150, 11),
+                                    text_align=TextNode.ALeft,
+                                    text_pos=(-190, 11),
                                     text_fg=cfg['ui_color2'],
                                     parent=parent)
         _resetPivot(frame)

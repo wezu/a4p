@@ -412,12 +412,12 @@ class MainMenu(DirectObject):
         #mouse wheel handling
         self.accept('wheel_up', self.scroll, [-1])
         self.accept('wheel_down', self.scroll, [1])
-        self.accept('space', self._doDebugThing)
 
         #set the shader for all elements except the scrolld frame/canvas
         self.setShader(path+'shaders/gui_v.glsl', path+'shaders/gui_f.glsl')
 
     def resetCamera(self):
+        base.cam.reparentTo(render)
         base.cam.setPos(173.453, 8.02785, 143.622)
         base.cam.setHpr(92.2724, -28.5096, -58.8269)
 
@@ -768,6 +768,7 @@ class MainMenu(DirectObject):
         self.elements['fixed_frame_top_right'].show()
         self.elements['fixed_frame_bottom_left'].show()
         self.elements['fixed_frame_bottom_right'].show()
+        self.elements['fixed_scroll_canvas'].show()
         for ring in self.rings:
             ring[0].show()
             ring[1].loop()

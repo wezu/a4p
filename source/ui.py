@@ -134,6 +134,9 @@ class UserInterface(DirectObject):
         else:
             return mapped_keyname
 
+    def unbindKeys(self):
+        self.ignoreAll()
+
     def bindKeys(self):
         self.ignoreAll()
         self.accept(self.getMappedKey(cfg['key-back']), self.key_map.__setitem__, ["back", True])

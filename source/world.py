@@ -25,7 +25,7 @@ class World(DirectObject):
         self.accept('world-move-pod-ghost',self.movePodGhost)
         self.accept( 'load-level', self.onLevelLoad)
         self.accept( 'world-link-objects', self.onLinkObject)
-
+        self.accept( 'world-clear-level', self.onClearLevel)
     #task
     def update(self, task):
         if self.pc_droid_node:
@@ -51,8 +51,25 @@ class World(DirectObject):
         self.pc_droid_node.setTag('pc_droid_node', '1')
         self.world.attachRigidBody(self.pc_droid_node.node())
 
+    def onClearLevel(self):
+        log.debug('World: clearing level')
+        for body in self.world.getRigidBodies():
+            self.world.remove(body)
+        self.world_node.removeNode()
+        self.world_node = render.attachNewNode('World')
+        self.world = BulletWorld()
+        self.world.setGravity(Vec3(0, 0, -9.81))
+        self.objects=[]
+        self.player_pod=None
+        self.ghost_pods=[]
+        self.specjal_objects=[]
+        self.max_v=Vec3(-5.0, -5.0, -5.0)
+        self.min_v=Vec3(5.0, 5.0, 5.0)
+        self.pc_droid_node=None
+        self.last_pc_jump_time=0.0
+
     def loadLevel(self, task):
-        log.debug('World loading level...')
+        log.debug('World: loading level...')
         with open(path+'maps/'+self.map_name+'.json') as f:
             values=json.load(f)
         #pc droid
@@ -93,7 +110,7 @@ class World(DirectObject):
             visible_node.wrtReparentTo(node)
             node.node().setLinearVelocity(Vec3(0,0,0))
         else:
-            log.warning(str(bullet_node_id)+' not found')
+            log.warning('World: '+str(bullet_node_id)+' not found')
 
     def onLevelLoad(self, map_name):
         self.map_name=map_name

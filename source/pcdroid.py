@@ -70,6 +70,18 @@ class PCDroid():
         return task.cont
 
     #functions
+    def disable(self):
+        self.camera_node.removeNode()
+        self.camera_gimbal.removeNode()
+        taskMgr.remove('pc_droid_update')
+        taskMgr.remove('pc_droid_net_update')
+
+    def setTeam(self, team):
+        if team=='red':
+            self.model.setShaderInput("glow_color", Vec3(0.94, 0.0, 0.1))
+        else:
+            self.model.setShaderInput("glow_color", Vec3(0.33,0.56, 1.0))
+
     def _rotateCamH(self, t):
         self.camera_node.setH(self.camera_node.getH()- t*cfg['mouse-speed'])
 
@@ -85,7 +97,10 @@ class PCDroid():
         LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=cfg['mouse-lag']+(dt*10.0), blendType='easeInOut').start()
 
     def lockCamera(self, offset=(0, -6, 1.2)):
+        self.camera_node = render.attachNewNode('camera_node')
+        self.camera_gimbal  = self.camera_node.attachNewNode("cameraGimbal")
         self.camera_node.setPos(render, self.node.getPos(render))
+        base.cam.reparentTo(render)
         base.cam.setPos(render, self.node.getPos(render))
         base.cam.setHpr(render, 0,0,0)
         base.cam.setPos(base.cam, offset)
