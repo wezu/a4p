@@ -120,9 +120,9 @@ class World(DirectObject):
         pass
 
     def applyPlayerPodForce(self, force, jump):
-        self.pc_droid_node.node().applyCentralForce(force*150.0)
+        self.pc_droid_node.node().applyCentralImpulse(force*1.5)
         if jump and globalClock.getRealTime()-self.last_pc_jump_time > 1.5:
-            self.pc_droid_node.node().applyCentralForce(Vec3(0, 0, 3000.0))
+            self.pc_droid_node.node().applyCentralImpulse(Vec3(0, 0, 30.0))
             self.last_pc_jump_time=globalClock.getRealTime()
 
     def loadModel(self, model_name):

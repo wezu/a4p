@@ -195,9 +195,10 @@ class Client(DirectObject):
             self.level_root.show()
             self.sun_and_sky.show()
             self.ui.bindKeys()
-            self.droid.node.setPos(20,0,2)
+            self.droid.node.setPos(render, 20,0,2)
             self.droid.lockCamera()
             self.droid.model.show()
+            self.droid.rig.show()
             self.ui.in_game_menu.showElements('hud_')
             self.ui.hideSoftCursor()
             self.ui.is_main_menu=False

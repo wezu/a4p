@@ -52,3 +52,4 @@ use-os-cursor False
 want-pstats False
 win-fixed-size False
 win-size 800 600
+camera_offset 0.0 -8.0 1.5

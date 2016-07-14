@@ -17,6 +17,12 @@ class PCDroid():
         self.model.reparentTo(self.node)
         self.model.hide()
 
+        self.rig=loader.loadModel(path+'models/droid_rig')
+        self.rig.setShader(Shader.load(Shader.SLGLSL, path+'shaders/droid_v.glsl', path+'shaders/droid_f.glsl'))
+        self.rig.setShaderInput("glow_color", Vec3(0.33,0.56, 1.0)) #blue team
+        self.rig.reparentTo(self.camera_node)
+        self.rig.hide()
+
         self.movment_vector=Vec3(0, 0, 0)
         self.jump=False
         self.last_jump_time=0.0
@@ -96,10 +102,12 @@ class PCDroid():
         LerpFunc(self._rotateCamH,fromData=0,toData=h, duration=cfg['mouse-lag']+(dt*10.0), blendType='easeInOut').start()
         LerpFunc(self._rotateCamP,fromData=0,toData=p, duration=cfg['mouse-lag']+(dt*10.0), blendType='easeInOut').start()
 
-    def lockCamera(self, offset=(0, -6, 1.2)):
+    def lockCamera(self):
+        offset=cfg['camera_offset']
         self.camera_node = render.attachNewNode('camera_node')
         self.camera_gimbal  = self.camera_node.attachNewNode("cameraGimbal")
         self.camera_node.setPos(render, self.node.getPos(render))
+        self.rig.reparentTo(self.camera_node)
         base.cam.reparentTo(render)
         base.cam.setPos(render, self.node.getPos(render))
         base.cam.setHpr(render, 0,0,0)
