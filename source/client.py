@@ -199,6 +199,7 @@ class Client(DirectObject):
             self.droid.lockCamera()
             self.droid.model.show()
             self.droid.rig.show()
+            self.droid.gun.show()
             self.ui.in_game_menu.showElements('hud_')
             self.ui.hideSoftCursor()
             self.ui.is_main_menu=False

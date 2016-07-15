@@ -1,5 +1,6 @@
 from panda3d.core import *
 from direct.interval.IntervalGlobal import *
+from direct.actor.Actor import Actor
 import random
 
 class PCDroid():
@@ -26,10 +27,31 @@ class PCDroid():
         self.movment_vector=Vec3(0, 0, 0)
         self.jump=False
         self.last_jump_time=0.0
+        self.last_fire_time=0.0
         # Task
         #taskMgr.add(self.update, 'pc_droid_update')
         #taskMgr.doMethodLater(1.0/30.0,self.networkUpdate, 'pc_droid_net_update')
 
+        #temp hardcode gun
+        self.gun=Actor(path+'models/m_pistol',
+                        {'fire':path+'models/a_pistol_fire'})
+        self.gun.setBlend(frameBlend = True)
+        self.gun.setShader(Shader.load(Shader.SLGLSL, path+'shaders/droid_v.glsl', path+'shaders/droid_f.glsl'))
+        self.gun.setShaderInput("glow_color", Vec3(0.33,0.56, 1.0)) #blue team
+        self.gun.reparentTo(self.camera_gimbal)
+        self.gun.setX(1.057)
+        self.gun.hide()
+
+        self.gun_flash=loader.loadModel(path+'models/muzzle_flash_pistol')
+        self.gun_flash.setShader(Shader.load(Shader.SLGLSL, path+'shaders/flash_v.glsl', path+'shaders/flash_f.glsl'))
+        self.gun_flash.reparentTo(self.camera_gimbal)
+        self.gun_flash.setX(1.057)
+        color_attrib = ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OOne, ColorBlendAttrib.OOneMinusIncomingColor)
+        self.gun_flash.setAttrib(color_attrib)
+        self.gun_flash.setBin("fixed", 0)
+        self.gun_flash.setDepthTest(True)
+        self.gun_flash.setDepthWrite(False)
+        self.gun_flash.hide()
 
     #tasks
     def networkUpdate(self, task):
@@ -50,6 +72,15 @@ class PCDroid():
             self.rotate_control(-delta_x*0.01, delta_y*0.01, dt)
             base.win.movePointer(0, half_x, half_y)
 
+            #shoot
+            if self.ui.key_map['fire']:
+                if globalClock.getRealTime()-self.last_fire_time > 0.3:
+                    messenger.send('audio-sfx',['pistol', self.model])
+                    self.gun.play('fire')
+                    self.last_fire_time=globalClock.getRealTime()
+                    self.gun_flash.show()
+                    Sequence(Wait(0.1), Func(self.gun_flash.hide)).start()
+
             force= Vec3(0,0,0)
             if self.ui.key_map['forward']:
                 force.setY(1.0)
@@ -65,6 +96,7 @@ class PCDroid():
             #if force.lengthSquared() != 0.0:
             self.movment_vector=force
 
+            #jump
             if self.ui.key_map['jump']:
                 self.jump=True
                 if globalClock.getRealTime()-self.last_jump_time > 1.5:
@@ -108,6 +140,10 @@ class PCDroid():
         self.camera_gimbal  = self.camera_node.attachNewNode("cameraGimbal")
         self.camera_node.setPos(render, self.node.getPos(render))
         self.rig.reparentTo(self.camera_node)
+        self.gun.reparentTo(self.camera_gimbal)
+        self.gun.setX(1.057)
+        self.gun_flash.reparentTo(self.camera_gimbal)
+        self.gun_flash.setX(1.057)
         base.cam.reparentTo(render)
         base.cam.setPos(render, self.node.getPos(render))
         base.cam.setHpr(render, 0,0,0)
